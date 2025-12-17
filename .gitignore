@@ -1,3 +1,11 @@
+<<<<<<< HEAD
 Videos/
 Games/
 bin/*.exe
+=======
+/Videos
+/Games
+/bin/*.exe
+/bin/decache.ico
+*.lnk
+>>>>>>> beta

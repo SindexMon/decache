@@ -40,6 +40,17 @@ h1 {
   font-size: 28px;
 }
 
+p {
+  margin: 0 0 1em 0;
+}
+
+p > span {
+  font-family: monospace;
+  padding: 2px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
 #download {
   width: fit-content;
   aspect-ratio: calc(4 / 3);
