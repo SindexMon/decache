@@ -432,7 +432,7 @@ goto main
 
 :scanXP
   if exist "%~1\Local Settings\" (
-    call :permissionError "%~1" "Local Settings"
+    call :checkPermissions "%~1" "Local Settings"
     call :scanBrowsers "%~1\Local Settings\Application Data\"
     call :scanHistory "%~1\Local Settings\History\History.IE5\" "*.dat"
     call :scanHistory "%~1\Local Settings\Temporary Internet Files\" "index.dat" 1
@@ -444,7 +444,7 @@ goto main
 
 :scanVista
   if exist "%~1\AppData\" (
-    call :permissionError "%~1" "AppData"
+    call :checkPermissions "%~1" "AppData"
     call :scanBrowsers "%~1\AppData\Local\"
     call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
     call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
@@ -458,7 +458,7 @@ goto main
   exit /b 0
 
 :: Mainly for password-protected user folders.
-:permissionError
+:checkPermissions
   dir "%~1\%~2\" 1>nul 2>nul
   if !errorlevel! == 1 (
     if %isAdmin% == 0 (
