@@ -62,6 +62,14 @@ h1 {
   text-decoration: none;
 }
 
+#downloadBtn:hover {
+  background: linear-gradient(rgb(153, 218, 255), rgb(115, 204, 255));
+}
+
+#downloadBtn:active {
+  background: linear-gradient(rgb(102, 182, 228), rgb(57, 127, 167));
+}
+
 #downloadBtn > * {
   color: #fff;
   font-size: 32px;
