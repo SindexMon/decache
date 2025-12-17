@@ -466,7 +466,7 @@ goto main
       pause > NUL | set /p =Please relaunch as administrator to read this directory. Otherwise, press any key to continue . . .
     ) else (
       echo ^^!^^! Unable to access directory "%~1"
-      echo This can be solved by running this script from the user in question ^(not on a backup^), or manually changing the permissions of the folder to allow access.
+      echo This can be solved by running this script while logged into the user in question ^(not on a backup^), or manually changing the permissions of the folder to allow access.
       pause
     )
   )
