@@ -29,6 +29,7 @@ set VIDEO_DATA_FILE="bin\video_data.txt"
 set "VIDEOS_PATH=Videos"
 set VIDEO_IDS=
 
+:: Grab the individual video IDs for direct RegEx(ish) searching in cache index/history
 for /f %%a in ('type %VIDEO_DATA_FILE%') do for /f "tokens=2 delims=|" %%b in ("%%~a") do (
   set "fitRegex=%%b"
   set "fitRegex=!fitRegex:,= !"
@@ -429,15 +430,45 @@ goto main
 
   exit /b 0
 
+:scanXP
+  if exist "%~1\Local Settings\" (
+    call :permissionError "%~1" "Local Settings"
+    call :scanBrowsers "%~1\Local Settings\Application Data\"
+    call :scanHistory "%~1\Local Settings\History\History.IE5\" "*.dat"
+    call :scanHistory "%~1\Local Settings\Temporary Internet Files\" "index.dat" 1
+    call :scanDir "%~1\Local Settings\Temp\" "KNOWN" "fla+.tmp"
+    call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
+  )
+
+  exit /b 0
+
+:scanVista
+  if exist "%~1\AppData\" (
+    call :permissionError "%~1" "AppData"
+    call :scanBrowsers "%~1\AppData\Local\"
+    call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
+    call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
+    call :scanHistory "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "index.dat" 1
+    call :scanDir "%~1\AppData\Local\Temp\" "KNOWN" "fla*.tmp"
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv"
+  )
+
+  exit /b 0
+
 :: Mainly for password-protected user folders.
 :permissionError
-  if %isAdmin% == 0 (
-    echo ^^!^^! You need administrative permissions to access "%~1"
-    pause > NUL | set /p =Please relaunch as administrator to read this directory. Otherwise, press any key to continue . . .
-  ) else (
-    echo ^^!^^! Unable to access directory "%~1"
-    echo This can be solved by running this script from the user in question ^(not on a backup^), or manually changing the permissions of the folder to allow access.
-    pause
+  dir "%~1\%~2\" 1>nul 2>nul
+  if !errorlevel! == 1 (
+    if %isAdmin% == 0 (
+      echo ^^!^^! You need administrative permissions to access "%~1"
+      pause > NUL | set /p =Please relaunch as administrator to read this directory. Otherwise, press any key to continue . . .
+    ) else (
+      echo ^^!^^! Unable to access directory "%~1"
+      echo This can be solved by running this script from the user in question ^(not on a backup^), or manually changing the permissions of the folder to allow access.
+      pause
+    )
   )
 
   exit /b 0
@@ -525,37 +556,25 @@ goto main
   call :scanDir "%drive%\WINDOWS\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
   call :scanDir "%drive%\WINDOWS\Temp\" "KNOWN" "fla*.tmp"
 
-  for %%x in ("%drive%", "%drive%\Windows.old") do (
+  :: In case the backup is of one user
+  call :scanVista "%drive%"
+  call :scanXP "%drive%"
+
+  :: In case the backup is of the users folder
+  for /f "tokens=* delims=" %%d in ('dir /a:h /a:d /b "%drive%"') do (
+    call :scanVista "%drive%\%%d"
+    call :scanXP "%drive%\%%d"
+  )
+
+  for /d %%x in ("%drive%","%drive%\Windows.old*") do (
     :: For post-XP machines
-    for /d %%d in ("%%~x\Users\*") do (
-      dir "%%d\Documents\" 1>nul 2>nul
-      if !errorlevel! == 1 (
-        call :permissionError "%%d"
-      )
-      
-      call :scanBrowsers "%%d\AppData\Local\"
-
-      call :scanHistory "%%d\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
-      call :scanHistory "%%d\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
-      call :scanHistory "%%d\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "index.dat" 1
-      call :scanDir "%%d\AppData\Local\Temp\" "KNOWN" "fla*.tmp"
-
-      call :scanDir "%%d\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
-      call :scanDir "%%d\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv"
-      call :scanDir "%%d\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    for /f "tokens=* delims=" %%d in ('dir /a:h /a:d /b "%%~x\Users"') do (
+      call :scanVista "%%~x\Users\%%d"
     )
     
     :: For pre-Vista machines
-    for /d %%d in ("%%~x\Documents and Settings\*") do (
-      dir "%%d\Application Data\" 1>nul 2>nul
-      if !errorlevel! == 1 (
-        call :permissionError "%%d"
-      )
-
-      call :scanBrowsers "%%d\Local Settings\Application Data\"
-      call :scanHistory "%%d\Local Settings\History\History.IE5\" "*.dat"
-      call :scanDir "%%d\Local Settings\Temp\" "KNOWN" "fla+.tmp"
-      call :scanDir "%%d\Local Settings\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    for /f "tokens=* delims=" %%d in ('dir /a:h /a:d /b "%%~x\Documents and Settings"') do (
+      call :scanXP "%%~x\Documents and Settings\%%d"
     )
   )
 
