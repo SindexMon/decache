@@ -1,0 +1,102 @@
+body {
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  background-size: 128px;
+  background-image: linear-gradient(rgba(240, 240, 240, 0.97), rgba(240, 240, 240, 0.97)), url("images/crack.png");
+}
+
+#main {
+  margin: auto;
+  width: fit-content;
+  /*background-color: blue;*/
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+#header {
+  height: 96px;
+  width: 50%;
+  margin-right: 50%;
+  overflow: hidden;
+  background-image: url("images/header.png");
+  background-repeat: no-repeat;
+}
+
+#container {
+  width: 648px;
+  height: fit-content;
+  background-color: #fcfcfc;
+  border: 2px #a0a0a0 dashed;
+  border-radius: 0px;
+  padding: 20px;
+  padding-bottom: 30px;
+}
+
+h1 {
+  margin: 0px 0 0px 0;
+  font-weight: 500;
+  font-size: 28px;
+}
+
+#download {
+  width: fit-content;
+  aspect-ratio: calc(4 / 3);
+  float: right;
+  text-align: center;
+}
+
+#downloadBtn {
+  margin: auto;
+  width: 60%;
+  height: 48px;
+  box-shadow: inset 0 0 0 3px rgb(65, 142, 187);
+  background: linear-gradient(rgb(110, 197, 247), rgb(80, 170, 221));
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 3px;
+  text-decoration: none;
+}
+
+#downloadBtn > * {
+  color: #fff;
+  font-size: 32px;
+  pointer-events: none;
+}
+
+#downloadBtn > img {
+}
+
+.image {
+  margin: 10px;
+  margin-bottom: 0;
+}
+
+.line {
+  width: 50%;
+  height: 1px;
+  background: #c0c0c0;
+  margin: 15px 0 15px 0;
+}
+
+.subline {
+  width: 100%;
+  height: 1px;
+  background: #c0c0c0;
+  margin: 5px 0 15px 0;
+}
+
+.note {
+  color: #808080;
+  font-style: italic;
+  font-size: 14px;
+}
+
+a {
+  color: rgb(105, 127, 255);
+  text-decoration: none;
+}
