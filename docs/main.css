@@ -68,7 +68,11 @@ h1 {
   pointer-events: none;
 }
 
-#downloadBtn > img {
+iframe {
+  text-align: center;
+  width: 60%;
+  margin: 20px 20% 0 20%;
+  aspect-ratio: calc(16 / 9);
 }
 
 .image {
