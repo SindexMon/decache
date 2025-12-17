@@ -51,6 +51,10 @@ p > span {
   border-radius: 4px;
 }
 
+p:last-of-type {
+  margin-bottom: 0;
+}
+
 #download {
   width: fit-content;
   aspect-ratio: calc(4 / 3);
