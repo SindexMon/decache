@@ -13,6 +13,8 @@ setlocal enabledelayedexpansion
 :: If running the script as admin, this corrects the directory
 cd /d "%~dp0"
 
+title Decache
+
 if not exist "bin" (
   echo Be sure to fully extract the ZIP file before running^^!^^!^^!
   pause
@@ -525,7 +527,6 @@ goto main
 
 :main
   cls
-  title Cached Video Finder
 
   echo Videos will copy into a "Videos" folder, automatically created in the folder you're running this file from.
   echo:
@@ -586,7 +587,7 @@ goto main
 
   cls
 
-  title Cached video finder
+  title Decache
 
   if %files% == 0 (
     echo %files% videos found.
