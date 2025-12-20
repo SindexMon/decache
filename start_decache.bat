@@ -475,32 +475,6 @@ goto main
 
   exit /b 0
 
-:: Some minor VBScript solutions are embedded for speed.
-:createHexVbs
-  set vbsPath="bin\hex.vbs"
-  echo With CreateObject("ADODB.Stream") > !vbsPath!
-  echo   .Type = 1 >> !vbsPath!
-  echo   .Open() >> !vbsPath!
-  echo   .LoadFromFile(WScript.Arguments(0)) >> !vbsPath!
-  echo   .Position = 0 >> !vbsPath!
-  echo   theBytes = .Read(WScript.Arguments(1)) >> !vbsPath!
-  echo End With >> !vbsPath!
-  echo hexHeader = "" >> !vbsPath!
-  echo For i = 1 To LenB(theBytes) >> !vbsPath!
-  echo   hexHeader = hexHeader ^& Right("0" ^& Hex(AscB(MidB(theBytes, i, 1))), 2) >> !vbsPath!
-  echo Next >> !vbsPath!
-  echo WScript.Echo(hexHeader) >> !vbsPath!
-
-  set vbsPath="bin\regex.vbs"
-  echo Dim reg : Set reg = New RegExp > !vbsPath!
-  echo reg.Pattern = WScript.Arguments(0) >> !vbsPath!
-  echo Dim matches, match >> !vbsPath!
-  echo Set matches = reg.Execute(WScript.Arguments(1)) >> !vbsPath!
-  echo For Each match In matches >> !vbsPath!
-  echo     WScript.Echo(match) >> !vbsPath!
-  echo Next >> !vbsPath!
-  exit /b 0
-
 :cleanseTitle
   set "title=%~1"
   set "title=!title:+= !"
@@ -550,7 +524,6 @@ goto main
       mkdir Videos
   )
 
-  call :createHexVbs
   cls
 
   :: For pre-2000 machines
@@ -579,8 +552,6 @@ goto main
     )
   )
 
-  del "bin\hex.vbs"
-  del "bin\regex.vbs"
   if exist "bin\frames.raw" (
     del "bin\frames.raw"
   )

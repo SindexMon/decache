@@ -1,7 +1,5 @@
 /Releases
 /Videos
 /Games
-/bin/*.exe
-/bin/*.swf
-/bin/decache.ico
+/bin
 *.lnk
