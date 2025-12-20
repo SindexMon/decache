@@ -4,15 +4,18 @@
 #include <string.h>
 #include <ctype.h>
 
-int is_filename_char(char c) {
-    return isalnum(c) || c == '_' || c == '-' || c == '.';
+// We cannot have filenames starting with "." or we lowkey die w mid results
+int is_filename_char(char character) {
+    return isalnum(character) || character == '_' || character == '-';
 }
 
 int is_valid_extension(const char* str, int len) {
-    if (len < 2 || len > 4) return 0;
+    if (len < 2 || len > 6) return 0;
+
     for (int i = 0; i < len; i++) {
         if (!isalnum(str[i])) return 0;
     }
+
     return 1;
 }
 
@@ -25,21 +28,27 @@ void find_filenames(const char* data, long size) {
             int start = i;
             int lastDot = -1;
             
-            while (i < size && is_filename_char(data[i])) {
+            while (i < size && (is_filename_char(data[i]) || data[i] == '.')) {
                 if (data[i] == '.') {
                     lastDot = i;
                 }
+                
                 i++;
             }
             
             int len = i - start;
             
-            if (lastDot != -1 && len >= 3) {
+            if (lastDot != -1 && len > 4) {
                 int extLen = (start + len) - (lastDot + 1);
                 
                 if (is_valid_extension(&data[lastDot + 1], extLen)) {
                     matchCount++;
-                    fwrite(&data[start], 1, len, stdout);
+
+                    fwrite(&data[start], 1, lastDot - start, stdout);
+
+                    printf("*");
+                    fwrite(&data[lastDot], 1, extLen, stdout);
+                    
                     printf("\n");
                 }
             }
@@ -47,8 +56,6 @@ void find_filenames(const char* data, long size) {
             i++;
         }
     }
-    
-    printf("\nTotal: %d filenames\n", matchCount);
 }
 
 int main(int argc, char** argv) {
