@@ -56,8 +56,8 @@ goto main
 :: Copies the file from the original drive to the new "videos" folder
 :saveFile
   set /a files+=1
-  if !files! == 1 (title !files! video found) else (title !files! videos found)
-  <nul set /p=Found video "%~n1%~x1" ... 
+  if !files! == 1 (title !files! file found) else (title !files! files found)
+  <nul set /p=Found file "%~n1%~x1" ... 
 
   :retryCopy
   for /f "tokens=3 USEBACKQ" %%s in (`dir /-c /w`) do set "size=%%s" 2>nul
@@ -67,7 +67,7 @@ goto main
       if !size! lss %~z1 (
         echo:
         echo ==============================================================
-        echo ^^!^^! Unable to copy video; free up storage space to continue. ^^!^^!
+        echo ^^!^^! Unable to copy file; free up storage space to continue. ^^!^^!
         pause > NUL | set /p =Press any key to try again . . .
         echo:
         echo ==============================================================
@@ -438,8 +438,10 @@ goto main
     call :scanBrowsers "%~1\Local Settings\Application Data\"
     call :scanHistory "%~1\Local Settings\History\History.IE5\" "*.dat"
     call :scanHistory "%~1\Local Settings\Temporary Internet Files\" "index.dat" 1
+    call :scanHistory "%~1\Local Settings\Temp\Temporary Internet Files\" "index.dat" 1
     call :scanDir "%~1\Local Settings\Temp\" "KNOWN" "fla+.tmp"
     call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
   )
 
   exit /b 0
