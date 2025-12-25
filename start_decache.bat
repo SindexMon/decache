@@ -520,6 +520,11 @@ goto main
     exit /b 0
   )
 
+  :: Selecting hard drives leaves a stray backslash; that would mess stuff up
+  if "%drive:~-1,1%" == "\" (
+    set "drive=%drive:~0,-1%"
+  )
+
   set /a files=0
   if not exist "%VIDEOS_PATH%\" (
       mkdir Videos
