@@ -440,8 +440,8 @@ goto main
     call :scanHistory "%~1\Local Settings\Temporary Internet Files\" "index.dat" 1
     call :scanHistory "%~1\Local Settings\Temp\Temporary Internet Files\" "index.dat" 1
     call :scanDir "%~1\Local Settings\Temp\" "KNOWN" "fla+.tmp"
-    call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
-    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
+    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
   )
 
   exit /b 0
@@ -454,9 +454,9 @@ goto main
     call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
     call :scanHistory "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "index.dat" 1
     call :scanDir "%~1\AppData\Local\Temp\" "KNOWN" "fla*.tmp"
-    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
-    call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv"
-    call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv"
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
+    call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
   )
 
   exit /b 0
@@ -511,14 +511,13 @@ goto main
   echo If you backed up your computer in a folder, enter the full path to that folder (example: C:\Backups\Old Laptop)
   echo:
   
-  set /p drive=Enter drive to search (example: C:) 
-  set "drive=%drive:/=\%"
-  set drive=%drive:"=%
-  if "%drive:~1,1%" neq ":" (
-    set "drive=%drive:~0,1%:%drive:~1%"
-  )
-  if "%drive:~-1,1%" == "\" (
-    set "drive=%drive:~0,-1%"
+  for /f "delims=" %%f in ('cscript /nologo "bin/pickfolder.vbs" "Select a computer."') do set "drive=%%f"
+
+  if "%drive%" == "" (
+    cls
+    echo No folder selected.
+    pause > NUL | set /p =Press any key to quit . . .
+    exit /b 0
   )
 
   set /a files=0
