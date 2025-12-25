@@ -67,6 +67,7 @@ p:last-of-type {
   width: 60%;
   height: 48px;
   box-shadow: inset 0 0 0 3px rgb(65, 142, 187);
+  background-color: rgb(80, 170, 221);
   background: linear-gradient(rgb(110, 197, 247), rgb(80, 170, 221));
   position: relative;
   display: flex;
@@ -78,10 +79,12 @@ p:last-of-type {
 }
 
 #downloadBtn:hover {
+  background-color: rgb(115, 204, 255);
   background: linear-gradient(rgb(153, 218, 255), rgb(115, 204, 255));
 }
 
 #downloadBtn:active {
+  background-color: rgb(57, 127, 167);
   background: linear-gradient(rgb(102, 182, 228), rgb(57, 127, 167));
 }
 
