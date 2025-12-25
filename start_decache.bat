@@ -68,7 +68,7 @@ goto main
         echo:
         echo ==============================================================
         echo ^^!^^! Unable to copy file; free up storage space to continue. ^^!^^!
-        pause > NUL | set /p =Press any key to try again . . .
+        pause >nul | set /p =Press any key to try again . . .
         echo:
         echo ==============================================================
         goto retryCopy
@@ -467,7 +467,7 @@ goto main
   if !errorlevel! == 1 (
     if %isAdmin% == 0 (
       echo ^^!^^! You need administrative permissions to access "%~1"
-      pause > NUL | set /p =Please relaunch as administrator to read this directory. Otherwise, press any key to continue . . .
+      pause >nul | set /p =Please relaunch as administrator to read this directory. Otherwise, press any key to continue . . .
     ) else (
       echo ^^!^^! Unable to access directory "%~1"
       echo This can be solved by running this script from the user in question ^(not on a backup^), or manually changing the permissions of the folder to allow access.
@@ -501,23 +501,39 @@ goto main
 
   exit /b 0
 
+:driveError
+  cls
+  echo %~1
+  pause >nul | set /p =Press any key to quit . . .
+  exit /b 0
+
 :main
   cls
 
-  echo Videos will copy into a "Videos" folder, automatically created in the folder you're running this file from.
+  echo:
+  echo   Decache
+  echo   Easy cache extractor
+  echo:
+  echo   Support @ sindexmon.github.io/decache/
+  echo:
+  echo Some points to get you started:
+  echo - Videos will copy into a "Videos" folder.
+  echo - Games will copy into a "Games" folder.
+  echo - Both these folders will be automatically created in the folder you extracted Decache to.
+  echo:
+  pause >nul | set /p =Press any key to select a computer . . .
   echo:
 
-  echo If you're running this on the computer you intend to search, just type C:
-  echo If you backed up your computer in a folder, enter the full path to that folder (example: C:\Backups\Old Laptop)
-  echo:
-  
-  for /f "delims=" %%f in ('cscript /nologo "bin/pickfolder.vbs" "Select a computer."') do set "drive=%%f"
+  for /f "delims=" %%f in ('cscript /nologo "bin/pickfolder.vbs" "Select a computer. The computer you're currently running is almost always found as (C:), though the location of a backup varies. See the website for more information."') do set "drive=%%f"
 
   if "%drive%" == "" (
-    cls
-    echo No folder selected.
-    pause > NUL | set /p =Press any key to quit . . .
+    call :driveError "No folder selected."
     exit /b 0
+  )
+
+  if "%drive:~0,1%" == ":" (
+    echo Invalid drive selected; re-routing to "C:"...
+    set "drive=C:"
   )
 
   :: Selecting hard drives leaves a stray backslash; that would mess stuff up
@@ -613,7 +629,7 @@ goto main
   ::  start "" "https://youtu.be/oVrzYFEoNB4"
   ::)
 
-  pause > NUL | set /p =Press any key to continue . . .
+  pause >nul | set /p =Press any key to continue . . .
 
   set vlcPath=
   if exist "C:\Program Files\VideoLAN\VLC\vlc.exe" (

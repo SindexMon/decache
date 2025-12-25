@@ -1,6 +1,6 @@
 // damn near 80% of this code was AI-generated
 // i aint use C++ a day in my life so we gotta plow through somehow Unforch
-// this is why this program is made using BATCH :sob: i aint dealing with backwards compatibility in a language i don't know
+// luckily i learned batch in seventh grade to conduct evil schemes
 // it works tho
 
 #include <iostream>
