@@ -56,7 +56,7 @@ goto main
 :: Copies the file from the original drive to the new "videos" folder
 :saveFile
   set /a files+=1
-  if !files! == 1 (title !files! file found) else (title !files! files found)
+  echo If you remove this the program explodes >nul
   <nul set /p=Found file "%~n1%~x1" ... 
 
   :retryCopy
@@ -348,12 +348,19 @@ goto main
 :scanDir
   echo Scanning folder "%~dp1"
   set currentFile="0"
+  set /a filesChecked=0
   
   if exist %1 (
     for %%n in (%~3) do (
       set "ext=%%n"
       set "ext=!ext:+=*!"
+
+      for /f %%f in ('dir /a:-d /-c /s /w "%~1!ext!" ^| findstr /c:"File(s)"') do set "numFiles=%%f"
+
       for /f "tokens=* delims=" %%f in ('dir /a:-d /s /b "%~1!ext!"') do (
+        set /a filesChecked+=1
+        title !filesChecked!/!numFiles! scanned
+
         if %2 == "CONCAT" (
           if !currentFile! == "0" (
             call :checkFile "%%f" %2
@@ -372,6 +379,7 @@ goto main
     )
   )
 
+  title Decache
   cls
   exit /b 0
 
