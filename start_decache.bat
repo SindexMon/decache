@@ -557,19 +557,19 @@ goto main
   call :scanXP "%drive%"
 
   :: In case the backup is of the users folder
-  for /f "tokens=* delims=" %%d in ('dir /a:h /a:d /b "%drive%"') do (
+  for /f "tokens=* delims=" %%d in ('dir /a:d /b "%drive%"') do (
     call :scanVista "%drive%\%%d"
     call :scanXP "%drive%\%%d"
   )
 
   for /d %%x in ("%drive%","%drive%\Windows.old*") do (
     :: For post-XP machines
-    for /f "tokens=* delims=" %%d in ('dir /a:h /a:d /b "%%~x\Users"') do (
+    for /f "tokens=* delims=" %%d in ('dir /a:d /b "%%~x\Users"') do (
       call :scanVista "%%~x\Users\%%d"
     )
     
     :: For pre-Vista machines
-    for /f "tokens=* delims=" %%d in ('dir /a:h /a:d /b "%%~x\Documents and Settings"') do (
+    for /f "tokens=* delims=" %%d in ('dir /a:d /b "%%~x\Documents and Settings"') do (
       call :scanXP "%%~x\Documents and Settings\%%d"
     )
   )
