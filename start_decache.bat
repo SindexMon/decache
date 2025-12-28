@@ -27,6 +27,7 @@ if %errorlevel% == 0 (
   set isAdmin=1
 )
 
+set FILE_CHECKS="get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
 set VIDEO_DATA_FILE="bin\video_data.txt"
 set "VIDEOS_PATH=Videos"
 set VIDEO_IDS=
@@ -209,6 +210,7 @@ goto main
     goto endComp
   )
 
+  set lastSaved=
   exit /b 0
   
   :endLoop
@@ -347,7 +349,7 @@ goto main
 
 :scanDir
   echo Scanning folder "%~dp1"
-  set currentFile="0"
+  set currentFile=
   set /a filesChecked=0
   
   if exist %1 (
@@ -357,23 +359,20 @@ goto main
 
       for /f %%f in ('dir /a:-d /-c /s /w "%~1!ext!" ^| findstr /c:"File(s)"') do set "numFiles=%%f"
 
+      :: TODO - check for mimetypes; make sure the merged file is UNKNOWN! will be finnicky regardless though...
       for /f "tokens=* delims=" %%f in ('dir /a:-d /s /b "%~1!ext!"') do (
         set /a filesChecked+=1
         title !filesChecked!/!numFiles! scanned
 
-        if %2 == "CONCAT" (
-          if !currentFile! == "0" (
-            call :checkFile "%%f" %2
-            set currentFile=!lastSaved!
-          ) else (
-            type "%%f" >> !currentFile!
-          )
-
-          if %%~zf neq 1048576 (
-            set currentFile="0"
-          )
-        ) else (
+        if "!currentFile!" == "" (
           call :checkFile "%%f" %2
+          set currentFile=!lastSaved!
+        ) else (
+          type "%%f" >> !currentFile!
+        )
+
+        if %%~zf neq 1048576 (
+          set currentFile=
         )
       )
     )
@@ -448,8 +447,8 @@ goto main
     call :scanHistory "%~1\Local Settings\Temporary Internet Files\" "index.dat" 1
     call :scanHistory "%~1\Local Settings\Temp\Temporary Internet Files\" "index.dat" 1
     call :scanDir "%~1\Local Settings\Temp\" "KNOWN" "fla+.tmp"
-    call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
-    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
+    call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
+    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
   )
 
   exit /b 0
@@ -462,9 +461,9 @@ goto main
     call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
     call :scanHistory "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "index.dat" 1
     call :scanDir "%~1\AppData\Local\Temp\" "KNOWN" "fla*.tmp"
-    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
-    call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
-    call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" "get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" %FILE_CHECKS%
+    call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" %FILE_CHECKS%
   )
 
   exit /b 0
@@ -557,7 +556,7 @@ goto main
   cls
 
   :: For pre-2000 machines
-  call :scanDir "%drive%\WINDOWS\Temporary Internet Files\" "KNOWN" "get_video+,videoplayback+,+.flv"
+  call :scanDir "%drive%\WINDOWS\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
   call :scanDir "%drive%\WINDOWS\Temp\" "KNOWN" "fla*.tmp"
 
   :: In case the backup is of one user
