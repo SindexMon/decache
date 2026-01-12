@@ -131,7 +131,7 @@ goto main
   set "fileName=!fileName:(={!"
   set "fileName=!fileName:)=}!"
 
-  if %2 == "# CONFIRMED" (
+  if %2 == "# CONFIRMED " (
     set "confirmedVideos=!confirmedVideos!File '!fileName!' is a PERFECT MATCH for '%~1'"
   ) else (
     if %2 == "# LIKELY" (
@@ -292,7 +292,7 @@ goto main
       if "!workingHash!" neq "" (
         echo "%%d" | findstr "!workingHash!" >nul
         if !errorlevel! == 0 (
-          call :printFinding %%b "# CONFIRMED"
+          call :printFinding %%b "# CONFIRMED "
           goto endHashComp
         )
       ) else (
