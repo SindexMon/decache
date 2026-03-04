@@ -65,10 +65,9 @@ const GALLERY = [
   ["stranglehold final level", 50]
 ];
 
-GALLERY.forEach((data) => {
-  const img = new Image();
-  img.src = `images/thumbnails/${data[0]}.jpg`.replace("#", "%23");
-});
+function getImageURL(name) {
+  return `images/thumbnails/${name}.jpg`.replace("%", "%25").replace("#", "%23");
+}
 
 let currentIndex = 35;
 
@@ -76,12 +75,17 @@ function shoot(isLeft) {
   currentIndex += isLeft ? -1 : 1;
 
   for (let i = 1; i <= 3; i++) {
-    document.getElementById(`thumb${i}`).children[0]["src"] = `images/thumbnails/${GALLERY[(currentIndex + i) % GALLERY.length][0]}.jpg`.replace("#", "%23");
+    document.getElementById(`thumb${i}`).children[0]["src"] = getImageURL(GALLERY[(currentIndex + i) % GALLERY.length][0]);
   }
 
   document.getElementById("title").innerHTML = GALLERY[(currentIndex + 2) % GALLERY.length][0];
   document.getElementById("price").children[0].innerHTML = "$" + GALLERY[(currentIndex + 2) % GALLERY.length][1];
 }
+
+GALLERY.forEach((data) => {
+  const img = new Image();
+  img.src = getImageURL(data[0]);
+});
 
 document.getElementById("thumb1").onclick = () => shoot(true);
 document.getElementById("thumb3").onclick = () => shoot(false);
