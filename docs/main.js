@@ -65,7 +65,7 @@ const GALLERY = [
   ["stranglehold final level", 50]
 ];
 
-THUMBNAILS.foreach((data) => {
+GALLERY.foreach((data) => {
   const img = new Image();
   img.src = `images/thumbnails/${data[0]}.jpg`.replace("#", "%23");
 });
