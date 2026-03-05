@@ -154,6 +154,11 @@ a {
   text-align: center;
   flex-wrap: wrap;
   align-content: flex-end;
+  border: 1px solid #c0c0c0;
+  background-color: #f5f5f5;
+  margin: 35px 0 15px 0;
+  padding: 15px 0 15px 0;
+  border-radius: 5px;
 }
 
 #thumb1, #thumb3 {
@@ -205,16 +210,17 @@ a {
 
 #info {
   width: 32rem;
-  font-style: italic;
 }
 
 #title {
   margin: 0.3125rem 0 0 0;
-  color: #808080;
+  color: #404040;
+  font-weight: 600;
 }
 
 #views {
   color: #808080;
+  font-style: italic;
   margin: 0;
 }
 
