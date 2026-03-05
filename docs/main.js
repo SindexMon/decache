@@ -77,7 +77,7 @@ function shoot(isLeft) {
 
   document.getElementById("title").innerHTML = GALLERY[(currentIndex + 2) % GALLERY.length][0];
   document.getElementById("gallery").getElementsByTagName("b")[0].innerHTML = (GALLERY[(currentIndex + 2) % GALLERY.length][2]).toLocaleString();
-  document.getElementById("gallery").getElementsByTagName("strong")[0].innerHTML = "$" + GALLERY[(currentIndex + 2) % GALLERY.length][1];
+  document.getElementById("gallery").getElementsByTagName("strong")[0].innerHTML = "$" + GALLERY[(currentIndex + 2) % GALLERY.length][1] + " USD";
 }
 
 GALLERY.forEach((data) => {
