@@ -1,3 +1,10 @@
+html {
+  -webkit-text-size-adjust: 100%; /* Chrome, Safari, iOS */
+  -moz-text-size-adjust: 100%;    /* Firefox */
+  -ms-text-size-adjust: 100%;     /* Edge */
+  text-size-adjust: 100%;         /* Standard */
+}
+
 body {
   font-family: Calibri, 'Trebuchet MS', sans-serif;
   background-size: 8rem;
@@ -153,7 +160,7 @@ a {
 #thumb1, #thumb3 {
   width: 5.625rem;
   aspect-ratio: 1;
-  opacity: 100%;
+  opacity: 70%;
   cursor: pointer;
 }
 
