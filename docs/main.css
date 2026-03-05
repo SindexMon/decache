@@ -213,11 +213,11 @@ a {
   color: #808080;
 }
 
-#price, #views {
+#views {
   color: #808080;
   margin: 0;
 }
 
-#price strong {
+#views strong {
   color: green;
 }
