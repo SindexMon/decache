@@ -28,8 +28,8 @@ if %errorlevel% == 0 (
 )
 
 set FILE_CHECKS="get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
-set VIDEO_DATA_FILE="bin\video_data.txt"
-set "VIDEOS_PATH=Videos"
+set VIDEO_DATA_FILE="%~dp0\bin\video_data.txt"
+set "VIDEOS_PATH=%~dp0\Videos"
 set VIDEO_IDS=
 
 :: Grab the individual video IDs for direct RegEx(ish) searching in cache index/history
@@ -51,8 +51,27 @@ set matchedHex=
 set matchedReg=
 set lastSaved=
 set workingHash=
+set fixedName=
 
 goto main
+
+:getFreeName
+  for %%f in (%1) do (
+    set "name=%%~nf"
+    set "extension=%%~xf"
+  )
+
+  set /a dupeCount=0
+  set "fixedName=!name!!extension!"
+
+  :checkDupe
+  if exist "%~2\!fixedName!" (
+    set /a dupeCount+=1
+    set "fixedName=!name! (!dupeCount!)!extension!"
+    goto checkDupe
+  )
+
+  exit /b 0
 
 :: Copies the file from the original drive to the new "videos" folder
 :saveFile
@@ -82,27 +101,21 @@ goto main
     set "ext=%~x1"
   )
 
-  set filePath="%VIDEOS_PATH%\%~n1!ext!"
-  set /a dupeCount=0
-  :checkDupe
-  if exist !filePath! (
-    set /a dupeCount+=1
-    set filePath="%VIDEOS_PATH%\%~n1 (!dupeCount!)!ext!"
-    goto checkDupe
-  )
+  call :getFreeName "%~n1!ext!" "%VIDEOS_PATH%\"
+  echo F|xcopy %1 "%VIDEOS_PATH%\!fixedName!" > nul
 
-  echo F|xcopy %1 !filePath! > nul
   <nul set /p=copied ... 
-  set lastSaved=!filePath!
+  set lastSaved="%VIDEOS_PATH%\!fixedName!"
+  echo Batch refuses to detect a label if I don't add this >nul
   exit /b 0
 
 :grabFileHex
-  for /f %%z in ('cscript /nologo "bin\hex.vbs" %1 %~2') do set matchedHex=%%z
+  for /f %%z in ('cscript /nologo "%~dp0\bin\hex.vbs" %1 %~2') do set matchedHex=%%z
   exit /b 0
 
 :grabRegexMatch
   set matchedReg=
-  for /f %%z in ('cscript /nologo "bin\regex.vbs" %1 %2') do (
+  for /f %%z in ('cscript /nologo "%~dp0\bin\regex.vbs" %1 %2') do (
     set matchedReg=%%z
     goto keepMatch
   )
@@ -125,8 +138,9 @@ goto main
   set "realName=!realName:}=)!"
   set "realName=!realName::=-!"
 
-  ren !lastSaved! "%~2 '!realName!' @ !fileName!"
-  set lastSaved="%VIDEOS_PATH%\%~2 '!realName!' @ !fileName!"
+  call :getFreeName "%~2 '!realName!' @ !fileName!" "%VIDEOS_PATH%\"
+  ren !lastSaved! "!fixedName!"
+  set lastSaved="%VIDEOS_PATH%\!fixedName!"
 
   set "fileName=!fileName:(={!"
   set "fileName=!fileName:)=}!"
@@ -148,15 +162,15 @@ goto main
 :compareFrames
   <nul set /p=comparing frames ... 
 
-  if exist "bin\frames.raw" (
-    del "bin\frames.raw"
+  if exist "%~dp0\bin\frames.raw" (
+    del "%~dp0\bin\frames.raw"
   )
 
   set "fixMultiHash=%1"
   set "fixMultiHash=!fixMultiHash:,= !"
 
-  "bin\ffmpeg.exe" -i !lastSaved! -vf "scale=32:32" -pix_fmt gray -f rawvideo "bin\frames.raw" >nul 2>nul
-  for /f "tokens=1,2" %%a in ('call "bin\phash.exe" "bin\frames.raw" !fixMultiHash!') do (
+  "%~dp0\bin\ffmpeg.exe" -i !lastSaved! -vf "scale=32:32" -pix_fmt gray -f rawvideo "%~dp0\bin\frames.raw" >nul 2>nul
+  for /f "tokens=1,2" %%a in ('call "%~dp0\bin\phash.exe" "%~dp0\bin\frames.raw" !fixMultiHash!') do (
     set workingHash=%%a
     exit /b 0
   )
@@ -203,11 +217,6 @@ goto main
         goto endLoop
       )
     )
-  )
-
-  if %2 neq "UNKNOWN" (
-    call :saveFile %1 ""
-    goto endComp
   )
 
   set lastSaved=
@@ -293,6 +302,8 @@ goto main
         echo "%%d" | findstr "!workingHash!" >nul
         if !errorlevel! == 0 (
           call :printFinding %%b "# CONFIRMED "
+          call :getFreeName !lastSaved! "%~dp0\bin\nirsoft\assets\"
+          echo F|xcopy !lastSaved! "%~dp0\bin\nirsoft\assets\!fixedName!" >nul
           goto endHashComp
         )
       ) else (
@@ -353,30 +364,27 @@ goto main
   set /a filesChecked=0
   
   if exist %1 (
-    for %%n in (%~3) do (
-      set "ext=%%n"
-      set "ext=!ext:+=*!"
+    :: TODO - check for mimetypes; make sure the merged file is UNKNOWN! will be finnicky regardless though...
+    pushd "%cd%\bin\nirsoft
 
-      for /f %%f in ('dir /a:-d /-c /s /w "%~1!ext!" ^| findstr /c:"File(s)"') do set "numFiles=%%f"
+    for /f "tokens=* delims=" %%f in ('call read_cache.bat %1 %2 %3') do (
+      set /a filesChecked+=1
+      title !filesChecked! scanned
 
-      :: TODO - check for mimetypes; make sure the merged file is UNKNOWN! will be finnicky regardless though...
-      for /f "tokens=* delims=" %%f in ('dir /a:-d /s /b "%~1!ext!"') do (
-        set /a filesChecked+=1
-        title !filesChecked!/!numFiles! scanned
+      if "!currentFile!" == "" (
+        call :checkFile "%%f" %2
+        set currentFile=!lastSaved!
+      ) else (
+        type "%%f" >> !currentFile!
+      )
 
-        if "!currentFile!" == "" (
-          call :checkFile "%%f" %2
-          set currentFile=!lastSaved!
-        ) else (
-          type "%%f" >> !currentFile!
-        )
-
-        if %%~zf neq 1048576 (
-          set currentFile=
-        )
+      if %%~zf neq 1048576 (
+        set currentFile=
       )
     )
   )
+
+  popd
 
   title Decache
   cls
@@ -388,21 +396,22 @@ goto main
   for /d %%p in ("%~1\User Data\*") do (
     :: There are rumors of cache clones...
     for /d %%c in ("%%p\Cache*") do (
-      call :scanHistory "%%c\" "data_*"
-      call :scanDir "%%c\" "UNKNOWN" "f_+"
+      if exist "%%c\Cache_Data" (
+        call :scanDir "%%c\Cache_Data\" "f_+" "ChromeCacheView"
+      ) else (
+        call :scanDir "%%c\" "f_+" "ChromeCacheView"
+      )
     )
 
     for /d %%c in ("%%p\Media Cache*") do (
-      call :scanHistory "%%c\" "data_*"
-      call :scanDir "%%c\" "CONCAT" "f_+"
+      call :scanDir "%%c\" "f_+" "ChromeCacheView"
     )
   )
 
   :: Firefox
   for /d %%p in ("%~1\Profiles\*") do (
-    call :scanHistory "%%p\Cache\" "_CACHE_*"
-    call :scanDir "%%p\Cache\" "UNKNOWN" "+"
-    call :scanDir "%%p\Cache2\" "UNKNOWN" "+"
+    call :scanDir "%%p\Cache\" "+" "MZCacheView"
+    call :scanDir "%%p\Cache2\" "+" "MZCacheView"
   )
 
   exit /b 0
@@ -418,22 +427,19 @@ goto main
     )
   )
 
-  :: Opera
-  call :scanHistory "%~1Opera\Opera\profile\" "dcache4.url"
-  call :scanDir "%~1Opera\Opera\profile\" "UNKNOWN" "opr+ f_+"
-  call :scanHistory "%~1Opera\Opera\cache\" "dcache4.url"
-  call :scanDir "%~1Opera\Opera\cache\" "UNKNOWN" "opr+ f_+"
+  :: Opera TODO: WHAT DIRECTORY DOES THIS USE EXACTLY?
+  :: TEST THIS WITH YOUR VM ONCE COMPLETE
+  call :scanDir "%~1Opera\Opera\profile\" "opr+ f_+" "OperaCacheView"
+  call :scanDir "%~1Opera\Opera\cache\" "opr+ f_+" "OperaCacheView"
 
   :: Future versions of Opera were based on Chromium
   for /d %%v in ("%~1Opera Software\*") do (
     for /d %%c in ("%%v\Cache*") do (
-      call :scanHistory "%%c\" "data_*"
-      call :scanDir "%%c\" "UNKNOWN" "opr+ f_+"
+      call :scanDir "%%c\" "opr+ f_+" "ChromeCacheView"
     )
 
     for /d %%c in ("%%v\Media Cache*") do (
-      call :scanHistory "%%c\" "data_*"
-      call :scanDir "%%c\" "CONCAT" "opr+ f_+"
+      call :scanDir "%%c\" "opr+ f_+" "ChromeCacheView"
     )
   )
 
@@ -444,11 +450,9 @@ goto main
     call :checkPermissions "%~1" "Local Settings"
     call :scanBrowsers "%~1\Local Settings\Application Data\"
     call :scanHistory "%~1\Local Settings\History\History.IE5\" "*.dat"
-    call :scanHistory "%~1\Local Settings\Temporary Internet Files\" "index.dat" 1
-    call :scanHistory "%~1\Local Settings\Temp\Temporary Internet Files\" "index.dat" 1
-    call :scanDir "%~1\Local Settings\Temp\" "KNOWN" "fla+.tmp"
-    call :scanDir "%~1\Local Settings\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
-    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
+    call :scanDir "%~1\Local Settings\Temp\" "fla+.tmp" ""
+    call :scanDir "%~1\Local Settings\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
+    call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
   )
 
   exit /b 0
@@ -457,13 +461,13 @@ goto main
   if exist "%~1\AppData\" (
     call :checkPermissions "%~1" "AppData"
     call :scanBrowsers "%~1\AppData\Local\"
-    call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
-    call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
-    call :scanHistory "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "index.dat" 1
-    call :scanDir "%~1\AppData\Local\Temp\" "KNOWN" "fla*.tmp"
-    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
-    call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" %FILE_CHECKS%
-    call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" %FILE_CHECKS%
+    ::save our souls, webcachev
+    ::call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
+    ::call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
+    call :scanDir "%~1\AppData\Local\Temp\" "fla+.tmp" ""
+    ::call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" %FILE_CHECKS%
+    ::call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" %FILE_CHECKS%
+    call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
   )
 
   exit /b 0
@@ -556,8 +560,8 @@ goto main
   cls
 
   :: For pre-2000 machines
-  call :scanDir "%drive%\WINDOWS\Temporary Internet Files\" "KNOWN" %FILE_CHECKS%
-  call :scanDir "%drive%\WINDOWS\Temp\" "KNOWN" "fla*.tmp"
+  call :scanDir "%drive%\WINDOWS\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
+  call :scanDir "%drive%\WINDOWS\Temp\" "fla*.tmp" ""
 
   :: In case the backup is of one user
   call :scanVista "%drive%"
