@@ -78,23 +78,10 @@ goto main
   set /a files+=1
   echo If you remove this the program explodes >nul
   <nul set /p=Found file "%~n1%~x1" ... 
-
-  :retryCopy
-  for /f "tokens=3 USEBACKQ" %%s in (`dir /-c /w`) do set "size=%%s" 2>nul
-  set /a "size=!size!" 2>nul
-  if !errorlevel! neq 1073750992 (
-    if !size! geq 0 (
-      if !size! lss %~z1 (
-        echo:
-        echo ==============================================================
-        echo ^^!^^! Unable to copy file; free up storage space to continue. ^^!^^!
-        pause >nul | set /p =Press any key to try again . . .
-        echo:
-        echo ==============================================================
-        goto retryCopy
-      )
-    )
-  )
+  
+  pushd "%~dp0\bin"
+  call "check_size.bat" %1
+  popd
 
   set "ext=%~2"
   if "!ext!" == "" (
@@ -110,12 +97,12 @@ goto main
   exit /b 0
 
 :grabFileHex
-  for /f %%z in ('cscript /nologo "%~dp0\bin\hex.vbs" %1 %~2') do set matchedHex=%%z
+  for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\hex.vbs" %1 %~2') do set matchedHex=%%z
   exit /b 0
 
 :grabRegexMatch
   set matchedReg=
-  for /f %%z in ('cscript /nologo "%~dp0\bin\regex.vbs" %1 %2') do (
+  for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\regex.vbs" %1 %2') do (
     set matchedReg=%%z
     goto keepMatch
   )
@@ -302,8 +289,14 @@ goto main
         echo "%%d" | findstr "!workingHash!" >nul
         if !errorlevel! == 0 (
           call :printFinding %%b "# CONFIRMED "
+
+          pushd "%~dp0\bin"
+          call "check_size.bat" !lastSaved!
+          popd
+
           call :getFreeName !lastSaved! "%~dp0\bin\nirsoft\assets\"
           echo F|xcopy !lastSaved! "%~dp0\bin\nirsoft\assets\!fixedName!" >nul
+
           goto endHashComp
         )
       ) else (
@@ -529,13 +522,13 @@ goto main
   echo:
   echo Some points to get you started:
   echo - Videos will copy into a "Videos" folder.
-  echo - Games will copy into a "Games" folder.
-  echo - Both these folders will be automatically created in the folder you extracted Decache to.
+  echo - Verified assets will be copied into "Assets.zip".
+  echo - Both of these will be automatically created in the folder you extracted Decache to.
   echo:
   pause >nul | set /p =Press any key to select a computer . . .
   echo:
 
-  for /f "delims=" %%f in ('cscript /nologo "bin/pickfolder.vbs" "Select a computer. The computer you're currently running is almost always found as (C:), though the location of a backup varies. See the website for more information."') do set "drive=%%f"
+  for /f "delims=" %%f in ('cscript /nologo "bin\vbs\pickfolder.vbs" "Select a computer. The computer you're currently running is almost always found as (C:), though the location of a backup varies. See the website for more information."') do set "drive=%%f"
 
   if "%drive%" == "" (
     call :driveError "No folder selected."
