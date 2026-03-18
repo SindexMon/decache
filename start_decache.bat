@@ -44,8 +44,6 @@ set VIDEO_IDS=%VIDEO_IDS:~0,-1%
 set matchedIds=
 set confirmedVideos=
 set likelyVideos=
-set foundVideos=
-set /a maybeCount=0
 
 set matchedHex=
 set matchedReg=
@@ -114,7 +112,6 @@ goto main
 :printFinding
   if "!likelyVideos!" neq "" set "likelyVideos=!likelyVideos!,"
   if "!confirmedVideos!" neq "" set "confirmedVideos=!confirmedVideos!,"
-  if "!foundVideos!" neq "" set "foundVideos=!foundVideos!,"
 
   for %%f in (!lastSaved!) do set "fileName=%%~nxf"
   
@@ -137,9 +134,6 @@ goto main
   ) else (
     if %2 == "# LIKELY" (
       set "likelyVideos=!likelyVideos!File '!fileName!' is a LIKELY MATCH for '%~1'"
-    ) else (
-      set "foundVideos=!foundVideos!File '!fileName!' is the same length as '%~1'"
-      set /a maybeCount+=1
     )
   )
 
@@ -153,7 +147,7 @@ goto main
     del "%~dp0\bin\frames.raw"
   )
 
-  set "fixMultiHash=%1"
+  set "fixMultiHash=%~1"
   set "fixMultiHash=!fixMultiHash:,= !"
 
   "%~dp0\bin\ffmpeg.exe" -i !lastSaved! -vf "scale=32:32" -pix_fmt gray -f rawvideo "%~dp0\bin\frames.raw" >nul 2>nul
@@ -226,10 +220,10 @@ goto main
         set lengthData="!matchedReg:~18,16!"
 
         for /f %%a in ('type %VIDEO_DATA_FILE%') do for /f "tokens=1-5,8-9 delims=|" %%b in ("%%~a") do (
-          if !lengthData! geq "%%e" (
+          if "%%e" neq "x" if !lengthData! geq "%%e" (
             if !lengthData! leq "%%f" (
               set vidData=!vidData!,"%%b|%%c|%%d|%%g|%%h"
-              if "%%c" neq "0000000000000000" (
+              if "%%d" neq "0000000000000000" (
                 set "hashes=!hashes! %%d"
               )
             )
@@ -240,13 +234,13 @@ goto main
           set /a "timescale=0x!matchedReg:~32,8!"
           set /a "duration=0x!matchedReg:~40,8! * 10"
 
-          set /a finalTime=!duration!/!timescale!
+          set /a lengthData=!duration!/!timescale!
 
           for /f %%a in ('type %VIDEO_DATA_FILE%') do for /f "tokens=1-3,8-9 delims=|" %%b in ("%%~a") do (
-            if !finalTime! geq %%e (
-              if !finalTime! leq %%f (
+            if "%%e" neq "x" if !lengthData! geq %%e (
+              if !lengthData! leq %%f (
                 set vidData=!vidData!,"%%b|%%c|%%d|%%e|%%f"
-                if "%%c" neq "0000000000000000" (
+                if "%%d" neq "0000000000000000" (
                   set "hashes=!hashes! %%d"
                 )
               )
@@ -256,10 +250,10 @@ goto main
           set lengthData="!matchedReg:~6,16!"
 
           for /f %%a in ('type %VIDEO_DATA_FILE%') do for /f "tokens=1-3,6-9 delims=|" %%b in ("%%~a") do (
-            if !lengthData! geq "%%e" (
+            if "%%e" neq "x" if !lengthData! geq "%%e" (
               if !lengthData! leq "%%f" (
                 set vidData=!vidData!,"%%b|%%c|%%d|%%g|%%h"
-                if "%%c" neq "0000000000000000" (
+                if "%%d" neq "0000000000000000" (
                   set "hashes=!hashes! %%d"
                 )
               )
@@ -276,12 +270,11 @@ goto main
   if "!vidData!" neq "" (
     set workingHash=
     set vidData=!vidData:~1!
-    set "descriptor=# MAYBE"
     set titles=
 
     if "!hashes!" neq "" (
       set "hashes=!hashes:~1!"
-      call :compareFrames !hashes!
+      call :compareFrames "!hashes!"
     )
 
     for %%a in (!vidData!) do for /f "tokens=1-5 delims=|" %%b in ("%%~a") do (
@@ -304,25 +297,16 @@ goto main
         set "fixedId=!fixedId:,= !"
         echo "%matchedIds%" | findstr "!fixedId!" >nul
         if !errorlevel! == 0 (
-          call :printFinding %%b "# LIKELY"
-          goto endHashComp
-        )
-
-        set /a diff=%%f-%%e
-
-        if !diff! lss 5 (
-          set "descriptor=# LIKELY"
-        )
-      
-        if "!titles!" == "" (
-          set "titles=%%b"
-        ) else (
-          set "titles=!titles!'+OR+'%%b"
+          if "!titles!" == "" (
+            set "titles=%%b"
+          ) else (
+            set "titles=!titles!'+OR+'%%b"
+          )
         )
       )
     )
 
-    call :printFinding !titles! "!descriptor!"
+    if "!titles!" neq "" call :printFinding "!titles!" "# LIKELY"
   )
 
   :endHashComp
@@ -383,22 +367,28 @@ goto main
   cls
   exit /b 0
 
+:scanChromium
+  for /d %%c in ("%~1\Cache*") do (
+    :: There are rumors of cache clones...
+    if exist "%%c\Cache_Data" (
+      call :scanDir "%%c\Cache_Data\" "f_+" "ChromeCacheView"
+    ) else (
+      call :scanDir "%%c\" "f_+" "ChromeCacheView"
+    )
+  )
+
+  for /d %%c in ("%~1\Media Cache*") do (
+    call :scanDir "%%c\" "f_+" "ChromeCacheView"
+  )
+
+  exit /b 0
+
 :: Collects Chrome and Firefox, along with browsers built off them (e.g. Microsoft Edge; Waterfox).
 :scanForks
   :: Chromium
+  call :scanChromium %1
   for /d %%p in ("%~1\User Data\*") do (
-    :: There are rumors of cache clones...
-    for /d %%c in ("%%p\Cache*") do (
-      if exist "%%c\Cache_Data" (
-        call :scanDir "%%c\Cache_Data\" "f_+" "ChromeCacheView"
-      ) else (
-        call :scanDir "%%c\" "f_+" "ChromeCacheView"
-      )
-    )
-
-    for /d %%c in ("%%p\Media Cache*") do (
-      call :scanDir "%%c\" "f_+" "ChromeCacheView"
-    )
+    call :scanChromium "%%p"
   )
 
   :: Firefox
@@ -454,6 +444,7 @@ goto main
   if exist "%~1\AppData\" (
     call :checkPermissions "%~1" "AppData"
     call :scanBrowsers "%~1\AppData\Local\"
+    call :scanBrowsers "%~1\AppData\Roaming\"
     ::save our souls, webcachev
     ::call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
     ::call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
@@ -585,6 +576,55 @@ goto main
   cls
 
   title Decache
+  
+  echo Compressing data...
+  "%~dp0\bin\7za.exe" a "%~dp0\Assets.zip.lock" "%~dp0\bin\nirsoft\assets\*" >nul 2>nul
+  echo Y|del "%~dp0\bin\nirsoft\assets\*" > nul
+  ren "%~dp0\Assets.zip.lock" "Assets.zip"
+
+  cls
+
+  set username=
+  set server=
+  set sendVideos=
+  for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\askserver.vbs" "3" "%files%"') do (
+    if "!username!" == "" (
+      set "username=%%z"
+    ) else (
+      if "!server!" == "" (
+        set "username=%%z"
+      ) else (
+        set "sendVideos=%%z"
+      )
+    )
+  )
+
+  if "!sendVideos!" == "6" (
+    echo todo add video id collecting stuff!
+  )
+
+  if "!username!" neq "" (
+    :retryConnection
+    ping github.com -n 1 >nul 2>nul
+    if !errorlevel! == 1 (
+      for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\nointernet.vbs" "3"') do if "%%z" == "1" goto retryConnection
+    ) else (
+      :: maybe dont retry 5 times when the size is too big
+      echo Uploading files ^(this may take a while^)...
+      
+      ::test paths with brackets so bad
+      set "path=%~dp0Assets.zip"
+      set "path=!path:[=\[!"
+      set "path=!path:]=\]!"
+      set "path=!path:{=\{!"
+      set "path=!path:}=\}!"
+
+      "%~dp0\bin\curl.exe" --insecure --retry 5 -T "!path!" https://sploded.org/php/send.php
+      if !errorlevel! neq 0 (
+        for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\nointernet.vbs" "3"') do if "%%z" == "1" goto retryConnection
+      )
+    )
+  )
 
   if %files% == 0 (
     echo %files% videos found.
@@ -609,15 +649,6 @@ goto main
 
     call :printTitles "%confirmedVideos%"
     call :printTitles "%likelyVideos%"
-
-    if "%confirmedVideos%" == "" (
-      if "%likelyVideos%" == "" (
-        call :printTitles "%foundVideos%"
-        goto skipUnconfirmed
-      )
-    )
-
-    echo + %maybeCount% less accurate matches.
     
     :skipUnconfirmed
     echo:
