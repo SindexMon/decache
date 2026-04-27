@@ -74,13 +74,8 @@ p:last-of-type {
   text-align: center;
 }
 
-#downloadBtn {
-  margin: auto;
-  width: 60%;
+.bigBtn {
   height: 3rem;
-  box-shadow: inset 0 0 0 3px rgb(65, 142, 187);
-  background-color: rgb(80, 170, 221);
-  background: linear-gradient(rgb(110, 197, 247), rgb(80, 170, 221));
   position: relative;
   display: flex;
   justify-content: center;
@@ -90,20 +85,77 @@ p:last-of-type {
   text-decoration: none;
 }
 
-#downloadBtn:hover {
+.bigBtn > * {
+  color: #fff;
+  font-size: 2rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.bigBtn:hover {
   background-color: rgb(115, 204, 255);
   background: linear-gradient(rgb(153, 218, 255), rgb(115, 204, 255));
 }
 
-#downloadBtn:active {
+.bigBtn:active {
   background-color: rgb(57, 127, 167);
   background: linear-gradient(rgb(102, 182, 228), rgb(57, 127, 167));
 }
 
-#downloadBtn > * {
-  color: #fff;
-  font-size: 2rem;
-  pointer-events: none;
+.bigBtn {
+  width: 60%;
+  box-shadow: inset 0 0 0 3px rgb(65, 142, 187);
+  background-color: rgb(80, 170, 221);
+  background: linear-gradient(rgb(110, 197, 247), rgb(80, 170, 221));
+}
+
+.bigBtn img {
+  width: 2.2rem;
+}
+
+.squareBtn {
+  width: 3rem;
+  outline: none;
+  margin-left: 0.2rem;
+}
+
+#discordBtn {
+  filter: hue-rotate(45deg);
+}
+
+#emailBtn {
+  filter: hue-rotate(200deg);
+}
+
+#downloadBtn {
+  margin: auto;
+}
+
+#uploadBtn {
+  width: 10rem;
+  filter: saturate(0%);
+}
+
+#btnContainer {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.fileSelected {
+  filter: hue-rotate(270deg) !important;
+}
+
+.fileSelected span:nth-of-type(1) {
+  display: none;
+}
+
+.fileSelected span:nth-of-type(2) {
+  display: inline-block !important;
+}
+
+form {
+  margin: 0;
 }
 
 iframe {
@@ -141,6 +193,16 @@ iframe {
 a {
   color: rgb(105, 127, 255);
   text-decoration: none;
+}
+
+sup {
+  vertical-align: top;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+sup:hover {
+  text-decoration: underline;
 }
 
 /* THUMBNAIL GALLERY */
@@ -225,4 +287,17 @@ a {
 
 #views strong {
   color: green;
+}
+
+/* File dropper */
+#file-dropper {
+  margin: auto;
+  width: 80%;
+  height: 12rem;
+  background-color: #f0f0f0;
+  border: 2px #a0a0a0 dashed;
+}
+
+li {
+  margin-bottom: 0.5em;
 }

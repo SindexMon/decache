@@ -14,7 +14,7 @@
       <div id="container">
         <div id="download">
           <div class="image"><img src="images/temp.gif"/></div>
-          <a href="https://github.com/SindexMon/decache/releases/latest/download/Decache_v1.0.2.zip" id="downloadBtn">
+          <a href="https://github.com/SindexMon/decache/releases/latest/download/Decache_v1.0.2.zip" class="bigBtn" id="downloadBtn">
             <span>Download</span>
             <div></div>
           </a>
@@ -44,8 +44,18 @@
         <p>For more information, see the <a href="faq.html">FAQ.</a></p>
         <h1>I found something!</h1>
         <hr/>
-        <p>Congratulations! If you were told you have verified assets but were unable/unwilling to share them directly, your best bet for immediate verification is emailing the files to <a href="mailto:decache.finds@gmail.com">decache.finds@gmail.com</a>.</p><p>If you're paranoid about something not reaching us, or us not knowing it was you who sent it, you can join our Discord server.</p>
-        <!--<iframe src="https://www.youtube.com/embed/oVrzYFEoNB4"></iframe>-->
+        <p>Congratulations! If you were told you have verified assets but were unable/unwilling to share them directly, your best bet for immediate verification is using the upload button below:</p><br/>
+        <div id="btnContainer">
+          <form action="upload.php" method="post" enctype="multipart/form-data">
+              <input type="file" id="file-upload" name="myFile" hidden onchange="this.form.submit()">
+              <label for="file-upload" class="bigBtn fileSelected" id="uploadBtn">
+                  <span>Select File</span>
+                  <span style="display: none;">Upload</span>
+              </label>
+          </form>
+          <a id="discordBtn" class="bigBtn squareBtn" href="https://discord.gg/6U8KwQEhyU"><img src="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/66e3d7f4ef6498ac018f2c55_Symbol.svg"/></a>
+          <a id="emailBtn" class="bigBtn squareBtn" title="decache.finds@gmail.com" href="mailto:decache.finds@gmail.com"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Email_Silk.svg"/></a>
+        </div>
       </div>
       <div style="padding-bottom: 5px; color:#808080;"><a href=".">Home</a>⠀∙⠀<a href="about.html">About</a>⠀∙⠀<a href="privacy.html">Privacy Policy</a>⠀∙⠀<a href="faq.html">FAQ</a></div>
     </div>

@@ -15,10 +15,28 @@
         <h1>About</h1>
         <hr/>
         <img style="float: right;" src="images/fear.png" width="200" title="A diagram from the first month of development"/>
-        <p><i>Decache</i> was primarily created by <b>SindexMon</b>, with additional help from <b>CanucksFan2006</b>. Created with the sole purpose of finding <i>Super Mario 64 big star secret</i> through a very specific glitch, a constant flow of revelations involving internet cache eventually led the program to outgrow its origins.</p>
+        <p><i>Decache</i> was primarily created by SindexMon, with additional help from CanucksFan2006. Created with the sole purpose of finding the lost YouTube video <i>Super Mario 64 big star secret</i> through a very specific glitch, a constant flow of revelations involving internet cache eventually led the program to outgrow its origins.</p>
         <p>Our goal is to make this stupidly complicated process as simple as possible, and ultimately prove how viable web cache really is.</p>
-        <p>Est. October 30th, 2024</p>
         <p style="color: #808080;">Special thanks to Strawrat, TOMYSSHADOW, and BlueMaxima for their pioneering work at Flashpoint.</p>
+        <h1>How it works</h1>
+        <hr/>
+        <p>Once provided with a computer as a starting base, <i>Decache</i> will begin routing through the drive in search of folders containing web cache. This includes more direct paths like Internet Explorer's "Temporary Internet Files," and paths where one has to infer based on structure, such as Chromium and Firefox forks.</p>
+        <p>Once a folder is spotted, the program will go through the following process:</p>
+        <ol>
+          <li>Scan the folder's index with the suitable <a href="https://www.nirsoft.net/utils/index.html#internet_utils">Nirsoft</a> utility, and print to a readable format.</li>
+          <ol type="a"><li>Search the dumped index data for unique terms related to lost digital media, such as YouTube video IDs and URLs of Flash games.</li></ol>
+          <li>Sort out files which are not present in the index, and are not tied to a URL.</li>
+          <ol type="a">
+            <li>For general web assets: search for unique filenames that have not been found in any other context (exclusive to Internet Explorer).</li>
+            <li>For videos: search for which files contain video data, then compare durations against a list of lost videos.</li>
+            <ol type="i">
+              <li>With this list of potential videos in mind, a file's frames are compared against the earliest known (unique) frame from each video. If there's a match, the file is marked as "verified."</li>
+              <li>If a frame cannot be found, or no frame is known, the video's ID is searched against the user's relevant browser history. If the video ID can be found within 12 hours<sup><a title="This large time range is due to possible time zone discrepancies.">?</a></sup> of the file's last-modified timestamp, it is marked as "unverified," and the user will be asked to review it manually.</li>
+              <li>If only <i>one</i> file of the same duration was found using the process above, and was last modified within <i>90 minutes</i><sup><a title="This large time range is due to daylight savings, which Windows does not account for.">?</a></sup> of the video's appearance in the user's history, the video is marked as "verified."</li>
+            </ol>
+          </ol>
+        </ol>
+        <p>Once all folders have been searched, any verified assets will be placed in a .ZIP file, and will be sent over once you provide confirmation. The assets may be reviewed in advance in the "Verified" folder.</p>
       </div>
       <div style="color:#808080;"><a href=".">Home</a>⠀∙⠀<a href="about.html">About</a>⠀∙⠀<a href="privacy.html">Privacy Policy</a>⠀∙⠀<a href="faq.html">FAQ</a></div>
     </div>

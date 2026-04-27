@@ -6,6 +6,7 @@
 :: UPDATE 2025/09/20 - Added MP4 and WebM support; THANK YOU CANUCKSFAN2006 FOR THE HELP!!!!
 :: UPDATE 2025/09/24 - Added permission checks; thank you D2 for the test cases!!
 :: UPDATE 2025/10/22 - Fully integrated frame-by-frame comparisons via FFmpeg and perceptual hashing
+:: UPDATE 2026/04/14 - Added direct cache index reading (paired with the existing failsafes), along with history comparisons for unindexed videos
 
 @echo off
 setlocal enabledelayedexpansion
@@ -27,10 +28,14 @@ if %errorlevel% == 0 (
   set isAdmin=1
 )
 
-set FILE_CHECKS="get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4"
 set VIDEO_DATA_FILE="%~dp0\bin\video_data.txt"
-set "VIDEOS_PATH=%~dp0\Videos"
+set "ASSETS_PATH=%~dp0\Verified"
+set "VIDEOS_PATH=%~dp0\Unverified"
+set FILE_CHECKS=
 set VIDEO_IDS=
+
+set LOCAL_HIST="%~dp0\bin\history\current_indexes.txt"
+set GLOBAL_HIST="%~dp0\bin\history\indexes.txt"
 
 :: Grab the individual video IDs for direct RegEx(ish) searching in cache index/history
 for /f %%a in ('type %VIDEO_DATA_FILE%') do for /f "tokens=2 delims=|" %%b in ("%%~a") do (
@@ -39,15 +44,24 @@ for /f %%a in ('type %VIDEO_DATA_FILE%') do for /f "tokens=2 delims=|" %%b in ("
   set "VIDEO_IDS=!VIDEO_IDS!!fitRegex! "
 )
 
+:: Fill the Internet Explorer file checks with unique names that have not been found in any other asset
+for /f "tokens=* delims=" %%a in ('type "%~dp0\bin\unique_names.txt"') do (
+  set FILE_CHECKS="get_video+,videoplayback+,+.flv,+.on2,+.webm,+.mp4%%a"
+)
+
 set VIDEO_IDS=%VIDEO_IDS:~0,-1%
 
-set matchedIds=
+set /a files=0
 set confirmedVideos=
 set likelyVideos=
 
 set matchedHex=
 set matchedReg=
+
 set lastSaved=
+set lastWebm=
+set lastMp4=
+
 set workingHash=
 set fixedName=
 
@@ -90,7 +104,7 @@ goto main
   echo F|xcopy %1 "%VIDEOS_PATH%\!fixedName!" > nul
 
   <nul set /p=copied ... 
-  set lastSaved="%VIDEOS_PATH%\!fixedName!"
+  set "lastSaved=%VIDEOS_PATH%\!fixedName!"
   echo Batch refuses to detect a label if I don't add this >nul
   exit /b 0
 
@@ -100,7 +114,7 @@ goto main
 
 :grabRegexMatch
   set matchedReg=
-  for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\regex.vbs" %1 %2') do (
+  for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\regex.vbs" %1 %2 0') do (
     set matchedReg=%%z
     goto keepMatch
   )
@@ -110,10 +124,7 @@ goto main
 
 :: Add videos to the end results with a level of confirmation
 :printFinding
-  if "!likelyVideos!" neq "" set "likelyVideos=!likelyVideos!,"
-  if "!confirmedVideos!" neq "" set "confirmedVideos=!confirmedVideos!,"
-
-  for %%f in (!lastSaved!) do set "fileName=%%~nxf"
+  for %%f in ("!lastSaved!") do set "fileName=%%~nxf"
   
   set "realName=%~1"
   set "realName=!realName:PLUSER=+!"
@@ -122,20 +133,23 @@ goto main
   set "realName=!realName:}=)!"
   set "realName=!realName::=-!"
 
-  call :getFreeName "%~2 '!realName!' @ !fileName!" "%VIDEOS_PATH%\"
-  ren !lastSaved! "!fixedName!"
-  set lastSaved="%VIDEOS_PATH%\!fixedName!"
+  if %2 == 1 (
+    call :getFreeName "!realName! @ !fileName!" "%ASSETS_PATH%\"
+    move "!lastSaved!" "%ASSETS_PATH%\!fixedName!" >nul
+    set "lastSaved=%ASSETS_PATH%\!fixedName!"
+  ) else (
+    if %2 == 2 (
+      call :getFreeName "!realName! @1@ !fileName!" "%VIDEOS_PATH%\"
+    ) else (
+      call :getFreeName "!realName! @ !fileName!" "%VIDEOS_PATH%\"
+    )
+
+    ren "!lastSaved!" "!fixedName!"
+    set "lastSaved=%VIDEOS_PATH%\!fixedName!"
+  )
 
   set "fileName=!fileName:(={!"
   set "fileName=!fileName:)=}!"
-
-  if %2 == "# CONFIRMED " (
-    set "confirmedVideos=!confirmedVideos!File '!fileName!' is a PERFECT MATCH for '%~1'"
-  ) else (
-    if %2 == "# LIKELY" (
-      set "likelyVideos=!likelyVideos!File '!fileName!' is a LIKELY MATCH for '%~1'"
-    )
-  )
 
   exit /b 0
 
@@ -150,7 +164,7 @@ goto main
   set "fixMultiHash=%~1"
   set "fixMultiHash=!fixMultiHash:,= !"
 
-  "%~dp0\bin\ffmpeg.exe" -i !lastSaved! -vf "scale=32:32" -pix_fmt gray -f rawvideo "%~dp0\bin\frames.raw" >nul 2>nul
+  "%~dp0\bin\ffmpeg.exe" -i "!lastSaved!" -vf "scale=32:32" -pix_fmt gray -f rawvideo "%~dp0\bin\frames.raw" >nul 2>nul
   for /f "tokens=1,2" %%a in ('call "%~dp0\bin\phash.exe" "%~dp0\bin\frames.raw" !fixMultiHash!') do (
     set workingHash=%%a
     exit /b 0
@@ -172,11 +186,12 @@ goto main
 
   call :grabFileHex %1 17 0
 
-  :: WebM header
+  :: WebM video header
   if "!matchedHex:~0,8!" == "1A45DFA3" (
     call :saveFile %1 ".webm"
     set videoFormat=WEBM
     set neededBytes=4489..................
+    set "lastWebm=!lastSaved!"
     goto endLoop
   )
 
@@ -195,9 +210,32 @@ goto main
         call :saveFile %1 ".mp4"
         set videoFormat=MP4
         set neededBytes=6D766864........................................
+        set "lastMp4=!lastSaved!"
         goto endLoop
       )
     )
+  )
+
+  :: WebM video frag header
+  if "!matchedHex:~0,8!" == "1F43B675" (
+    if exist "!lastWebm!" (
+      copy /b "!lastWebm!" + %1 temp.bin >nul 2>nul
+      move /Y temp.bin "!lastWebm!" >nul 2>nul
+      cscript /nologo "%~dp0\bin\vbs\unmodify_date.vbs" "!lastWebm!" %1
+    )
+    set "lastSaved=!lastWebm!"
+    exit /b 0
+  )
+
+  :: MP4 frag header
+  if "!matchedHex:~0,8!" == "blahblahfucktemp" (
+    if exist "!lastMp4!" (
+      copy /b "!lastMp4!" + %1 temp.bin >nul 2>nul
+      move /Y temp.bin "!lastMp4!" >nul 2>nul
+      cscript /nologo "%~dp0\bin\vbs\unmodify_date.vbs" "!lastMp4!" %1
+    )
+    set "lastSaved=!lastMp4!"
+    exit /b 0
   )
 
   set lastSaved=
@@ -209,10 +247,15 @@ goto main
     :: This deep in the file is ridiculously slow to read... sorry abt that
     set byte_set=700,1024
   )
+
+  if !hasUnknown! == 0 (
+    set hasUnknown=1
+    call :readHistory
+  )
   
   :: Gradually increases the number of bytes to read from the file, looking for durations
   for %%i in (!byte_set!) do (
-    call :grabFileHex !lastSaved! %%i 0
+    call :grabFileHex "!lastSaved!" %%i 0
     call :grabRegexMatch "!neededBytes!" "!matchedHex!"
 
     if "!matchedReg!" neq "" (
@@ -271,6 +314,7 @@ goto main
     set workingHash=
     set vidData=!vidData:~1!
     set titles=
+    set rarity=3
 
     if "!hashes!" neq "" (
       set "hashes=!hashes:~1!"
@@ -281,62 +325,83 @@ goto main
       if "!workingHash!" neq "" (
         echo "%%d" | findstr "!workingHash!" >nul
         if !errorlevel! == 0 (
-          call :printFinding %%b "# CONFIRMED "
-
-          pushd "%~dp0\bin"
-          call "check_size.bat" !lastSaved!
-          popd
-
-          call :getFreeName !lastSaved! "%~dp0\bin\nirsoft\assets\"
-          echo F|xcopy !lastSaved! "%~dp0\bin\nirsoft\assets\!fixedName!" >nul
-
+          call :printFinding %%b 1
           goto endHashComp
         )
       ) else (
-        set "fixedId=%%c"
-        set "fixedId=!fixedId:,= !"
-        echo "%matchedIds%" | findstr "!fixedId!" >nul
-        if !errorlevel! == 0 (
-          if "!titles!" == "" (
-            set "titles=%%b"
-          ) else (
-            set "titles=!titles!'+OR+'%%b"
+        for %%p in (%%c) do (
+          set bestRating=3
+
+          if exist "%~dp0\bin\history\temp\%%p" (
+            for /f "tokens=* delims=" %%y in ('type "%~dp0\bin\history\temp\%%p"') do (
+              for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\date_to_unix.vbs" "%%y" "!lastSaved!"') do (
+                if "%%z" lss "!bestRating!" set "bestRating=%%z"
+              )
+            )
+          )
+
+          if !bestRating! lss 3 (
+            if "!titles!" == "" (
+              set "titles=%%b"
+              if !bestRating! == 1 set rarity=2
+            ) else (
+              set "titles=!titles!+OR+%%b"
+              set rarity=3
+            )
           )
         )
       )
     )
 
-    if "!titles!" neq "" call :printFinding "!titles!" "# LIKELY"
+    if "!titles!" neq "" (
+      call :printFinding "!titles!" !rarity!
+    )
   )
 
   :endHashComp
   echo compared^^!
   exit /b 0
 
-:: Scans browser history/cache indexes for lost video IDs
-:scanHistory
-  echo Scanning for video IDs...
-
-  if "%~3" == "" (
-    set matchedIds=
+:: Takes note of history indexes
+:registerHistory
+  if exist %1 (
+    if %2 == init (echo %1 > !LOCAL_HIST!)
+    if %2 == local (echo %1 >> !LOCAL_HIST!)
+    if %2 == global (echo %1 >> !GLOBAL_HIST!)
+  ) else (
+    if %2 == init (del !LOCAL_HIST! 2>nul)
   )
 
-  if exist %1 (
-    for /f "tokens=* delims=" %%f in ('findstr /s /m "%VIDEO_IDS%" "%~1%~2"') do (
-      for %%v in (%VIDEO_IDS%) do (
-        findstr /c:"%%v" "%%f" >nul 2>nul
-        if !errorlevel! == 0 (
-          set "matchedIds=!matchedIds!%%v,"
-        )
+  exit /b 0
+
+:: Reads browser history for lost video IDs
+:readHistory
+  <nul set /p=scanning history ... 
+  pushd "%~dp0\bin\history"
+
+  if !lastCacheScanner! == "MZCacheView" (
+    for /f "tokens=* delims=" %%h in ('findstr /i /l /c:"places.sqlite" /c:"history.dat" !GLOBAL_HIST!') do (
+      call scan_history.bat %%h
+    )
+  ) else (
+    if !lastCacheScanner! == "" (
+      for /f "tokens=* delims=" %%h in ('type !GLOBAL_HIST! 2^>nul') do (
+        call scan_history.bat %%h
+      )
+    ) else (
+      for /f "tokens=* delims=" %%h in ('type !LOCAL_HIST! 2^>nul') do (
+        call scan_history.bat %%h
       )
     )
   )
 
-  cls
+  popd
   exit /b 0
 
 :scanDir
   echo Scanning folder "%~dp1"
+  set lastCacheScanner=%3
+  set hasUnknown=0
   set currentFile=
   set /a filesChecked=0
   
@@ -348,20 +413,33 @@ goto main
       set /a filesChecked+=1
       title !filesChecked! scanned
 
-      if "!currentFile!" == "" (
-        call :checkFile "%%f" %2
-        set currentFile=!lastSaved!
+      call :checkFile %%f %2
+
+      if "!lastSaved!" == "" (
+        if "!currentFile!" neq "" (
+          copy /b "!currentFile!" + %%f temp.bin >nul 2>nul
+          move /Y temp.bin "!currentFile!" >nul 2>nul
+          cscript /nologo "%~dp0\bin\vbs\unmodify_date.vbs" "!currentFile!" %%f
+        )
       ) else (
-        type "%%f" >> !currentFile!
+        set "currentFile=!lastSaved!"
       )
 
       if %%~zf neq 1048576 (
         set currentFile=
       )
     )
+
+    set lastSaved=
+    set lastWebm=
+    set lastMp4=
+    popd
   )
 
-  popd
+  :: This is here because the ID files will be created once the history is scanned, and it does not have to be scanned again for FLAs
+  if !hasUnknown! == 0 (
+    type !LOCAL_HIST! >> !GLOBAL_HIST! 2>nul
+  )
 
   title Decache
   cls
@@ -369,16 +447,16 @@ goto main
 
 :scanChromium
   for /d %%c in ("%~1\Cache*") do (
-    :: There are rumors of cache clones...
+    :: There are rumors of cache clones... also Opera is built off Chromium so that's why that's there
     if exist "%%c\Cache_Data" (
-      call :scanDir "%%c\Cache_Data\" "f_+" "ChromeCacheView"
-    ) else (
-      call :scanDir "%%c\" "f_+" "ChromeCacheView"
+      call :scanDir "%%c\Cache_Data\" "opr+ f_+" "ChromeCacheView"
+    ) else if "%%~nc" neq "Cache_Data" (
+      call :scanDir "%%c\" "opr+ f_+" "ChromeCacheView"
     )
   )
 
   for /d %%c in ("%~1\Media Cache*") do (
-    call :scanDir "%%c\" "f_+" "ChromeCacheView"
+    call :scanDir "%%c\" "opr+ f_+" "ChromeCacheView"
   )
 
   exit /b 0
@@ -388,11 +466,15 @@ goto main
   :: Chromium
   call :scanChromium %1
   for /d %%p in ("%~1\User Data\*") do (
+    call :registerHistory "%%p\History" init
+    call :registerHistory "%%p\Archived History" local
     call :scanChromium "%%p"
   )
 
   :: Firefox
   for /d %%p in ("%~1\Profiles\*") do (
+    call :registerHistory "%%p\places.sqlite" global
+    call :registerHistory "%%p\history.dat" global
     call :scanDir "%%p\Cache\" "+" "MZCacheView"
     call :scanDir "%%p\Cache2\" "+" "MZCacheView"
   )
@@ -411,20 +493,9 @@ goto main
   )
 
   :: Opera TODO: WHAT DIRECTORY DOES THIS USE EXACTLY?
-  :: TEST THIS WITH YOUR VM ONCE COMPLETE
+  :: TEST THIS WITH YOUR VM ONCE COMPLETE AND ALSO ADD HISTORY
   call :scanDir "%~1Opera\Opera\profile\" "opr+ f_+" "OperaCacheView"
   call :scanDir "%~1Opera\Opera\cache\" "opr+ f_+" "OperaCacheView"
-
-  :: Future versions of Opera were based on Chromium
-  for /d %%v in ("%~1Opera Software\*") do (
-    for /d %%c in ("%%v\Cache*") do (
-      call :scanDir "%%c\" "opr+ f_+" "ChromeCacheView"
-    )
-
-    for /d %%c in ("%%v\Media Cache*") do (
-      call :scanDir "%%c\" "opr+ f_+" "ChromeCacheView"
-    )
-  )
 
   exit /b 0
 
@@ -432,11 +503,16 @@ goto main
   if exist "%~1\Local Settings\" (
     call :checkPermissions "%~1" "Local Settings"
     call :scanBrowsers "%~1\Local Settings\Application Data\"
-    call :scanHistory "%~1\Local Settings\History\History.IE5\" "*.dat"
-    call :scanDir "%~1\Local Settings\Temp\" "fla+.tmp" ""
+    call :registerHistory "%~1\Local Settings\History\" init
     call :scanDir "%~1\Local Settings\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
+    call :registerHistory "%~1\Local Settings\Temp\History\" init
     call :scanDir "%~1\Local Settings\Temp\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
+    call :scanDir "%~1\Local Settings\Temp\" "fla+.tmp" ""
   )
+
+  del !LOCAL_HIST! 2>nul
+  del !GLOBAL_HIST! 2>nul
+  echo Y|del "%~dp0\bin\history\temp\*" > nul
 
   exit /b 0
 
@@ -445,14 +521,13 @@ goto main
     call :checkPermissions "%~1" "AppData"
     call :scanBrowsers "%~1\AppData\Local\"
     call :scanBrowsers "%~1\AppData\Roaming\"
-    ::save our souls, webcachev
-    ::call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache\" "WebCacheV*"
-    ::call :scanHistory "%~1\AppData\Local\Microsoft\Windows\WebCache.old\" "WebCacheV*" 1
     call :scanDir "%~1\AppData\Local\Temp\" "fla+.tmp" ""
-    ::call :scanDir "%~1\AppData\Local\Microsoft\Windows\INetCache\" "KNOWN" %FILE_CHECKS%
-    ::call :scanDir "%~1\AppData\Local\Packages\windows_ie_ac_001\AC\INetCache\" "KNOWN" %FILE_CHECKS%
     call :scanDir "%~1\AppData\Local\Microsoft\Windows\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
   )
+  
+  del !LOCAL_HIST! 2>nul
+  del !GLOBAL_HIST! 2>nul
+  echo Y|del "%~dp0\bin\history\temp\*" > nul
 
   exit /b 0
 
@@ -496,68 +571,48 @@ goto main
 
   exit /b 0
 
+:checkLikelyVideo
+  if "!goodVideo!" neq "" (
+    call :getFreeName "!goodVideo:@1@=@!" "%ASSETS_PATH%"
+    move "%VIDEOS_PATH%\!goodVideo!" "%ASSETS_PATH%\!fixedName!"
+    set goodVideo=
+  )
+
+  exit /b 0
+
 :driveError
   cls
   echo %~1
   pause >nul | set /p =Press any key to quit . . .
   exit /b 0
 
-:main
-  cls
-
-  echo:
-  echo   Decache
-  echo   Easy cache extractor
-  echo:
-  echo   Support @ sindexmon.github.io/decache/
-  echo:
-  echo Some points to get you started:
-  echo - Videos will copy into a "Videos" folder.
-  echo - Verified assets will be copied into "Assets.zip".
-  echo - Both of these will be automatically created in the folder you extracted Decache to.
-  echo:
-  pause >nul | set /p =Press any key to select a computer . . .
-  echo:
-
-  for /f "delims=" %%f in ('cscript /nologo "bin\vbs\pickfolder.vbs" "Select a computer. The computer you're currently running is almost always found as (C:), though the location of a backup varies. See the website for more information."') do set "drive=%%f"
-
-  if "%drive%" == "" (
-    call :driveError "No folder selected."
-    exit /b 0
-  )
-
-  if "%drive:~0,1%" == ":" (
-    echo Invalid drive selected; re-routing to "C:"...
-    set "drive=C:"
-  )
+:scanDrive
+  set "tempDrive=%~1"
+  del !LOCAL_HIST! 2>nul
+  del !GLOBAL_HIST! 2>nul
 
   :: Selecting hard drives leaves a stray backslash; that would mess stuff up
-  if "%drive:~-1,1%" == "\" (
-    set "drive=%drive:~0,-1%"
-  )
-
-  set /a files=0
-  if not exist "%VIDEOS_PATH%\" (
-      mkdir Videos
+  if "!tempDrive:~-1,1!" == "\" (
+    set "tempDrive=!tempDrive:~0,-1!"
   )
 
   cls
 
   :: For pre-2000 machines
-  call :scanDir "%drive%\WINDOWS\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
-  call :scanDir "%drive%\WINDOWS\Temp\" "fla*.tmp" ""
+  call :scanDir "!tempDrive!\WINDOWS\Temporary Internet Files\" %FILE_CHECKS% "IECacheView"
+  call :scanDir "!tempDrive!\WINDOWS\Temp\" "fla*.tmp" ""
 
   :: In case the backup is of one user
-  call :scanVista "%drive%"
-  call :scanXP "%drive%"
+  call :scanVista "!tempDrive!"
+  call :scanXP "!tempDrive!"
 
   :: In case the backup is of the users folder
-  for /f "tokens=* delims=" %%d in ('dir /a:d /b "%drive%"') do (
-    call :scanVista "%drive%\%%d"
-    call :scanXP "%drive%\%%d"
+  for /f "tokens=* delims=" %%d in ('dir /a:d /b "!tempDrive!"') do (
+    call :scanVista "!tempDrive!\%%d"
+    call :scanXP "!tempDrive!\%%d"
   )
 
-  for /d %%x in ("%drive%","%drive%\Windows.old*") do (
+  for /d %%x in ("!tempDrive!","!tempDrive!\Windows.old*") do (
     :: For post-XP machines
     for /f "tokens=* delims=" %%d in ('dir /a:d /b "%%~x\Users"') do (
       call :scanVista "%%~x\Users\%%d"
@@ -569,62 +624,146 @@ goto main
     )
   )
 
-  if exist "bin\frames.raw" (
-    del "bin\frames.raw"
+  exit /b 0
+
+:main
+  if not exist "%VIDEOS_PATH%\" (
+    mkdir Videos
   )
 
   cls
 
-  title Decache
+  if "%~1" == "" (
+    echo:
+    echo   Decache
+    echo   Easy cache extractor
+    echo:
+    echo   Support @ sindexmon.github.io/decache/
+    echo:
+    echo Some points to get you started:
+    echo - Videos will copy into a "Videos" folder.
+    echo - Verified assets will be copied into "Assets.zip".
+    echo - Both of these will be automatically created in the folder you extracted Decache to.
+    echo:
+    pause >nul | set /p =Press any key to select a computer . . .
+    echo:
+
+    for /f "delims=" %%f in ('cscript /nologo "bin\vbs\pickfolder.vbs" "Select a computer. The computer you're currently running is almost always found as (C:), though the location of a backup varies. See the website for more information."') do set "drive=%%f"
+
+    if "!drive!" == "" (
+      call :driveError "No folder selected."
+      exit /b 0
+    )
+
+    if "!drive:~0,1!" == ":" (
+      echo Invalid drive selected; re-routing to "C:"...
+      set "drive=C:"
+    )
+
+    call :scanDrive "!drive!"
+  ) else (
+    if not exist "%~1" (
+      call :driveError "File or directory does not exist: %1"
+      exit /b 0
+    ) else (
+      :: Check for if we should read from a file
+      if exist "%~1\" (
+        call :scanDrive "%~1"
+      ) else (
+        for /f "tokens=* delims=" %%a in ('type "%~1"') do (
+          if "%%~a" neq "" call :scanDrive "%%~a"
+        )
+      )
+    )
+  )
+
+  if exist "bin\frames.raw" (
+    del "bin\frames.raw"
+  )
   
-  echo Compressing data...
-  "%~dp0\bin\7za.exe" a "%~dp0\Assets.zip.lock" "%~dp0\bin\nirsoft\assets\*" >nul 2>nul
-  echo Y|del "%~dp0\bin\nirsoft\assets\*" > nul
-  ren "%~dp0\Assets.zip.lock" "Assets.zip"
+  set lastTitle=
+  set goodVideo=
+
+  for /f "tokens=* delims=" %%f in ('dir /a:-d /b "%VIDEOS_PATH%\*"') do (
+    set "videoName=%%f"
+    
+    for /f "tokens=1-2 delims=@" %%a in ("%%f") do (
+      if "!lastTitle!" neq "%%a" (
+        call :checkLikelyVideo
+        if "%%b" == "1" set "goodVideo=%%f"
+      ) else (
+        set goodVideo=
+      )
+
+      set "lastTitle=%%a"
+    )
+  )
+
+  call :checkLikelyVideo
 
   cls
 
+  title Decache
+
+  cls
+
+  :: Exclamation cleansing handled in VBS file
   set username=
   set server=
   set sendVideos=
-  for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\askserver.vbs" "3" "%files%"') do (
+  for /f "tokens=* delims=" %%z in ('cscript /nologo "%~dp0\bin\vbs\askserver.vbs" "3" "%files%"') do (
     if "!username!" == "" (
       set "username=%%z"
     ) else (
       if "!server!" == "" (
-        set "username=%%z"
+        set "server=%%z"
       ) else (
         set "sendVideos=%%z"
       )
     )
   )
+  
+  echo "!username!" > "%ASSETS_PATH%\credit.txt"
 
+  :: User allowed sharing of encrypted IDs
   if "!sendVideos!" == "6" (
-    echo todo add video id collecting stuff!
+    type "%~dp0\bin\cached_ids.txt" >> "%~dp0\Verified\cached_ids.txt"
   )
+  
+  del "%~dp0\bin\cached_ids.txt" >nul 2>nul
+
+  echo Compressing data...
+
+  pushd "%~dp0\bin"
+  call "check_size.bat" "%ASSETS_PATH%\"
+  popd
+
+  "%~dp0\bin\7za.exe" a "%~dp0\Assets.zip.lock" "%ASSETS_PATH%\*" >nul 2>nul
+
+  call :getFreeName "Assets.zip" "%~dp0"
+  ren "%~dp0\Assets.zip.lock" "!fixedName!"
+
+  cls
 
   if "!username!" neq "" (
     :retryConnection
-    ping github.com -n 1 >nul 2>nul
+    ping google.com -n 1 >nul 2>nul
     if !errorlevel! == 1 (
       for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\nointernet.vbs" "3"') do if "%%z" == "1" goto retryConnection
     ) else (
       :: maybe dont retry 5 times when the size is too big
       echo Uploading files ^(this may take a while^)...
-      
-      ::test paths with brackets so bad
-      set "path=%~dp0Assets.zip"
-      set "path=!path:[=\[!"
-      set "path=!path:]=\]!"
-      set "path=!path:{=\{!"
-      set "path=!path:}=\}!"
 
-      "%~dp0\bin\curl.exe" --insecure --retry 5 -T "!path!" https://sploded.org/php/send.php
-      if !errorlevel! neq 0 (
-        for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\nointernet.vbs" "3"') do if "%%z" == "1" goto retryConnection
+      for /f "tokens=* delims=" %%s in ('call "%~dp0\bin\curl.exe" -o nul -w "%%{http_code}" -s -k --retry 5 -F "fieldname=@%~dp0!fixedName!" https://sploded.org/php/send.php') do (
+        if "%%s" neq "200" (
+          :: for some reason this says cscript is not a command wtf
+          for /f %%z in ('cscript /nologo "%~dp0\bin\vbs\nointernet.vbs" "3"') do if "%%z" == "1" goto retryConnection
+        )
       )
     )
   )
+
+  cls
 
   if %files% == 0 (
     echo %files% videos found.
