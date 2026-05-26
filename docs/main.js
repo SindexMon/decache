@@ -167,7 +167,7 @@ document.getElementById("submission").addEventListener("submit", async function(
   if (timeLeft > 0) {
     return;
   }
-  timeLeft = 12;
+  timeLeft = 15;
 
   const form = new FormData(this);
   const data = Object.fromEntries(form);
@@ -175,6 +175,8 @@ document.getElementById("submission").addEventListener("submit", async function(
   if (data["title"] == "" || data["id"] == "") {
     timeLeft = 0;
     return alert("Please provide a title and video ID.")
+  } else if (data["context"] == "") {
+    return alert("Please provide additional context.");
   } else {
     const video = "/" + data["id"] + "/";
     const matchData = [...video.matchAll(/\W([A-Za-z0-9_-]{10}[AEIMQUYcgkosw048])\W/g)];
