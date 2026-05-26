@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 
         for (size_t i = 0; i < target_hashes.size(); ++i) {
             int dist = hamming(hash, target_hashes[i]);
-            if (dist <= 4 && target_hashes[i] != 0)
+            if (dist <= 3 && target_hashes[i] != 0)
                 std::cout << std::hex << std::setw(16) << std::setfill('0') << target_hashes[i] << " "
                           << std::hex << hash << " " << std::dec << dist << "\n";
         }

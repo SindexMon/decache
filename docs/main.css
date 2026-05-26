@@ -31,7 +31,19 @@ body {
   background-repeat: no-repeat;
 }
 
+.top {
+  position: absolute;
+  /*top: -1.8rem;
+  left: 5.95rem;*/
+  font-size: 1.0rem;
+  font-style: italic;
+  color:#999999;
+  top: -1.6rem;
+  right: 0rem;
+}
+
 #container {
+  position: relative;
   width: 40.5rem;
   height: fit-content;
   background-color: #fcfcfc;
@@ -63,10 +75,6 @@ p > span {
   font-size: 0.8125rem;
 }
 
-p:last-of-type {
-  margin-bottom: 0;
-}
-
 #download {
   width: fit-content;
   aspect-ratio: calc(4 / 3);
@@ -81,7 +89,6 @@ p:last-of-type {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  margin-bottom: 3px;
   text-decoration: none;
 }
 
@@ -129,6 +136,7 @@ p:last-of-type {
 
 #downloadBtn {
   margin: auto;
+  margin-bottom: 3px;
 }
 
 #uploadBtn {
@@ -273,6 +281,16 @@ sup:hover {
   width: 32rem;
 }
 
+#bounty {
+  height: 1.8rem;
+  margin: 0.06rem 0 0rem 0;
+  font-size: 1.0rem;
+  text-align: center;
+  font-weight: 600;
+  font-style: italic;
+  color: #ff5b5b;
+}
+
 #title {
   margin: 0.3125rem 0 0 0;
   color: #404040;
@@ -290,7 +308,7 @@ sup:hover {
 }
 
 /* File dropper */
-#file-dropper {
+#fileDropper {
   margin: auto;
   width: 80%;
   height: 12rem;
@@ -300,4 +318,39 @@ sup:hover {
 
 li {
   margin-bottom: 0.5em;
+}
+
+/* Submissions */
+#submission {
+  /*margin-top: 1.4rem;*/
+  display: grid;
+  grid-template-columns: minmax(0, 0.15fr) minmax(0, 0.85fr) minmax(0, 0.15fr);
+  grid-template-rows: repeat(3, minmax(0, 1fr)) minmax(0, 3fr) minmax(0, 1.3fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0.2rem;
+  resize: none;
+}
+
+#submission textarea {
+  grid-column: 1 / 4;
+  grid-row: 4;
+}
+
+#submission .short_field {
+  grid-column: 2 / 4
+}
+
+#submission button {
+  grid-column: 3;
+}
+
+#suggestBtn {
+  height: auto;
+  border: none;
+  width: auto;
+  filter: hue-rotate(135deg);
+}
+
+#suggestBtn * {
+  font-size: 1.0rem;
 }

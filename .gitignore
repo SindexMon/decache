@@ -1,6 +1,7 @@
 /Releases
 /Decache Exporter
-/Videos
-/Games
+/Verified
+/Unverified
 /bin
-*.lnk
+*.zip
+*.py

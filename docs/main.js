@@ -1,8 +1,42 @@
+const UPLOAD_BTN = document.getElementById("uploadBtn");
 const GALLERY = [
+  ["Gears of War 2- final boss battle and ending cutscene", 50, 16948],
+  ["Gears of War Craziest Double Torque Bow kill", 50, 18086],
+  ["Gears of War- Are these headshots", 50, 834],
+  ["Gears of War- Cr1TiKaL's 5th sniper montage", 50, 3941],
+  ["Gears of War- Cr1TiKaL's 6th sniper montage", 50, 655],
+  ["Halo 3 - 6 Last Resort glitches", 50, 57015],
+  ["Halo 3 glitches- On top of Pelican on Rat's Nest", 50, 50240],
+  ["Halo 3 glitches- ghost gun + tutorial", 50, 6300],
+  ["Halo 3 glitches- on top of cannon on The Ark + tutorial", 50, 7823],
+  ["Halo 3 glitches- outside of foundry tutorial- forge", 50, 5859],
+  ["Halo 3- 3 Cold Storage glitches + out and under the map", 50, 4830],
+  ["Halo 3- 3 amazing kills", 50, 14224],
+  ["Halo 3- 8 glitches on foundry", 50, 6798],
+  ["Halo 3- Cr1TiKaL's short no scope montage", 50, 1125],
+  ["Halo 3- Daark Venoms crazy lone wolfs game", 50, 1323],
+  ["Halo 3- amazing triple splatter", 50, 23780],
+  ["Halo 3- incredible double splatter aka ninja warthhog", 50, 42963],
+  ["Modern Warfare 2 destroying Harriers UAVs Helicopters with pistols", 50, 5722],
+  ["Turok- Serpent battle", 50, 1928],
+  ["devil may cry 4- boss battle #1", 50, 6378],
+  ["devil may cry 4- boss battle #2", 50, 9089],
+  ["devil may cry 4- boss battle #3", 50, 6312],
+  ["devil may cry 4- boss battle #4", 50, 23896],
+  ["devil may cry 4- boss battle #5", 50, 42801],
+  ["devil may cry 4- boss battle #6", 50, 7550],
+  ["devil may cry 4- boss battle #7", 50, 7195],
+  ["devil may cry 4- boss battle #8", 50, 8644],
+  ["devil may cry 4- boss battle #9", 50, 7149],
+  ["rsv2 glitches- secret room on three kingdoms casino", 50, 17994],
+  ["stranglehold final level", 50, 23429],
   ["Army of Two- if I were a rich man achievement guide", 50, 41225],
   ["Call of duty 4 glitchs- bomb walk glitch plus tutorial", 50, 41982],
-  ["Cod4 glitches- on top of pipline tutorial- old school", 50, 61857],
   ["Cod4 glitches- on top of the map bloc tutorial- old school", 50, 91165],
+  ["Gears of war Jetpack tutorial(NO STANDBYE OR LAG SWITCH)", 50, 8961],
+  ["Halo 3 glitches- outside of Foundry- forge", 50, 90519],
+  ["Cr1TiKaL's Modern Warfare 2 'Army of One' Montage", 50, 98328],
+  ["Cod4 glitches- on top of pipline tutorial- old school", 50, 61857],
   ["Cr1TiKaL's 1st Gears of War 2 montage (no bots)", 50, 9478],
   ["Cr1TiKaL's 1st Gears of War 2 sniper montage (no bots)", 50, 25260],
   ["Cr1TiKaL's 1st GoW montage (all ranked)", 50, 555],
@@ -26,47 +60,15 @@ const GALLERY = [
   ["Cr1TiKaL's second sniper montage", 50, 776],
   ["Cr1TiKaLs multisnipe kill minitage(100% ranked)", 50, 5344],
   ["Gears of War 2 Teamwork Fail", 50, 55593],
-  ["Gears of War 2- Destroyed by Debris", 50, 13192],
-  ["Gears of War 2- final boss battle and ending cutscene", 50, 16948],
-  ["Gears of War Craziest Double Torque Bow kill", 50, 18086],
-  ["Gears of War- Are these headshots", 50, 834],
-  ["Gears of War- Cr1TiKaL's 5th sniper montage", 50, 3941],
-  ["Gears of War- Cr1TiKaL's 6th sniper montage", 50, 655],
-  ["Gears of war Jetpack tutorial(NO STANDBYE OR LAG SWITCH)", 50, 8961],
-  ["Cr1TiKaL's Modern Warfare 2 'Army of One' Montage", 50, 98328],
-  ["Halo 3 - 6 Last Resort glitches", 50, 57015],
-  ["Halo 3 glitches- On top of Pelican on Rat's Nest", 50, 50240],
-  ["Halo 3 glitches- ghost gun + tutorial", 50, 6300],
-  ["Halo 3 glitches- on top of cannon on The Ark + tutorial", 50, 7823],
-  ["Halo 3 glitches- outside of Foundry- forge", 50, 90519],
-  ["Halo 3 glitches- outside of foundry tutorial- forge", 50, 5859],
-  ["Halo 3- 3 Cold Storage glitches + out and under the map", 50, 4830],
-  ["Halo 3- 3 amazing kills", 50, 14224],
-  ["Halo 3- 8 glitches on foundry", 50, 6798],
-  ["Halo 3- Cr1TiKaL's short no scope montage", 50, 1125],
-  ["Halo 3- Daark Venoms crazy lone wolfs game", 50, 1323],
-  ["Halo 3- amazing triple splatter", 50, 23780],
-  ["Halo 3- incredible double splatter aka ninja warthhog", 50, 42963],
-  ["Modern Warfare 2 destroying Harriers UAVs Helicopters with pistols", 50, 5722],
-  ["Turok- Serpent battle", 50, 1928],
-  ["devil may cry 4- boss battle #1", 50, 6378],
-  ["devil may cry 4- boss battle #2", 50, 9089],
-  ["devil may cry 4- boss battle #3", 50, 6312],
-  ["devil may cry 4- boss battle #4", 50, 23896],
-  ["devil may cry 4- boss battle #5", 50, 42801],
-  ["devil may cry 4- boss battle #6", 50, 7550],
-  ["devil may cry 4- boss battle #7", 50, 7195],
-  ["devil may cry 4- boss battle #8", 50, 8644],
-  ["devil may cry 4- boss battle #9", 50, 7149],
-  ["rsv2 glitches- secret room on three kingdoms casino", 50, 17994],
-  ["stranglehold final level", 50, 23429]
+  ["Gears of War 2- Destroyed by Debris", 50, 13192]
 ];
 
 function getImageURL(name) {
   return `images/thumbnails/${name}.jpg`.replace("%", "%25").replace("#", "%23");
 }
 
-let currentIndex = 33;
+let currentIndex = 6133;
+let timeLeft = 0;
 
 function shoot(isLeft) {
   currentIndex += isLeft ? -1 : 1;
@@ -89,3 +91,139 @@ document.getElementById("thumb1").onclick = () => shoot(true);
 document.getElementById("thumb3").onclick = () => shoot(false);
 
 shoot(true);
+
+document.querySelector("form").addEventListener("change", async function(event) {
+  event.preventDefault();
+
+  const files = document.getElementById("fileUpload").files;
+  if (UPLOAD_BTN.className == "bigBtn" || files.length == 0) return;
+
+  UPLOAD_BTN.className = "bigBtn";
+  const file = files[0];
+  document.getElementById("fileUpload").value = "";
+  
+  try {
+    let reqData = "";
+    if (file.name.endsWith("zip")) {
+      const zip = await JSZip.loadAsync(file);
+
+      const credit = zip.files["credit.txt"];
+      const cached_ids = zip.files["cached_ids.txt"];
+      const contents = zip.files["contents.txt"];
+      const filenames = Object.keys(zip.files).join("\n") + "\n";
+
+      if (credit) reqData += await credit.async("text");
+      if (contents) reqData += "CONTENTS\n" + await contents.async("text");
+      if (filenames) reqData += "FILENAMES\n" + filenames;
+      if (cached_ids) reqData += "CACHED\n" + await cached_ids.async("text");
+    } else {
+      reqData += "PRIVATE:Credit provided within file\n";
+      reqData += "PUBLIC:Credit provided within file\n";
+      reqData += "FILENAMES\n";
+      reqData += file.name;
+    }
+
+    const r = await fetch("https://upload.decache.workers.dev/upload", {
+      method: "POST",
+      body: reqData,
+      headers: {
+        "X-API-Key": "upload"
+      }
+    });
+
+    if (r.status === 429) {
+      alert("Please wait a minute before attempting to upload again.");
+    } else if (r.status !== 200) {
+      alert("Your files were unable to be uploaded. Please try again later, or try the other options.");
+    } else {
+      const uploadUrl = await r.text();
+
+      if (uploadUrl !== "nothing 2 see here") {
+        const upload = await fetch(uploadUrl, {
+          method: "PUT",
+          body: file
+        });
+
+        const resp = await upload.status;
+        if (resp == 200) {
+          alert("Your files were successfully uploaded!")
+        } else {
+          alert("Your files were unable to be uploaded. Please try again later, or try the other options.")
+        }
+      } else {
+        alert("Your files were successfully uploaded!")
+      }
+    }
+  } catch(err) {
+    alert("Your files were unable to be uploaded. Please try again later, or try the other options.")
+    console.log(err);
+  }
+
+  UPLOAD_BTN.className = "bigBtn fileSelected";
+});
+
+document.getElementById("submission").addEventListener("submit", async function(event) {
+  event.preventDefault();
+  if (timeLeft > 0) {
+    return;
+  }
+  timeLeft = 10;
+
+  const form = new FormData(this);
+  const data = Object.fromEntries(form);
+
+  if (data["title"] == "" || data["id"] == "") {
+    timeLeft = 0;
+    return alert("Please provide a title and video ID.")
+  } else {
+    const video = "/" + data["id"] + "/";
+    const matchData = [...video.matchAll(/\W([A-Za-z0-9_-]{10}[AEIMQUYcgkosw048])\W/g)];
+    switch (matchData.length) {
+      case 0:
+        timeLeft = 0;
+        return alert("Please provide a valid video ID.");
+      case 1:
+        data["id"] = matchData[0][1];
+        break;
+      default:
+        timeLeft = 0;
+        return alert("Please only provide one video ID.");
+    }
+  }
+  
+  const timeSegs = data["length"].split(":");
+  for (const timee of timeSegs) {
+    if (isNaN(timee)) {
+      timeLeft = 0;
+      return alert("Please provide a valid duration.");
+    }
+  }
+
+  try {
+    const r = await fetch("https://upload.decache.workers.dev/suggest", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "X-API-Key": "upload"
+      }
+    });
+
+    const resp = await r.status;
+    if (resp !== 200) {
+      alert("Your suggestion was not received. Please try again!");
+    }
+  } catch(err) {
+    alert("Your suggestion was not received. Please try again!")
+  }
+
+  timeLeft = 10;
+  const cooldownTimer = setInterval(function(){
+    if(timeLeft <= 0){
+      clearInterval(cooldownTimer);
+      document.getElementById("suggestBtn").children[0].innerHTML = "Suggest";
+    } else {
+      document.getElementById("suggestBtn").children[0].innerHTML = timeLeft;
+    }
+    timeLeft -= 1;
+  }, 1000);
+});
