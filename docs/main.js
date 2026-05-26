@@ -167,7 +167,7 @@ document.getElementById("submission").addEventListener("submit", async function(
   if (timeLeft > 0) {
     return;
   }
-  timeLeft = 10;
+  timeLeft = 12;
 
   const form = new FormData(this);
   const data = Object.fromEntries(form);
@@ -216,9 +216,8 @@ document.getElementById("submission").addEventListener("submit", async function(
     alert("Your suggestion was not received. Please try again!")
   }
 
-  timeLeft = 10;
   const cooldownTimer = setInterval(function(){
-    if(timeLeft <= 0){
+    if (timeLeft <= 1) {
       clearInterval(cooldownTimer);
       document.getElementById("suggestBtn").children[0].innerHTML = "Suggest";
     } else {
