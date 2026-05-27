@@ -176,6 +176,7 @@ document.getElementById("submission").addEventListener("submit", async function(
     timeLeft = 0;
     return alert("Please provide a title and video ID.")
   } else if (data["context"] == "") {
+    timeLeft = 0;
     return alert("Please provide additional context.");
   } else {
     const video = "/" + data["id"] + "/";
