@@ -45,7 +45,7 @@
         <p>For more information, see the <a href="faq.html">FAQ.</a></p>
         <h1>I found something!</h1>
         <hr/>
-        <p>Congratulations! If you were told you have verified assets but were unable/unwilling to share them directly, your best bet for immediate verification is using the upload button below, or emailing us at <a href="mailto:decache.finds@gmail.com">decache.finds@gmail.com</a>.</p>
+        <p>Congratulations! If you were told you have verified assets but were unable/unwilling to share them directly, your best bet for immediate verification is using the upload button below, joining the Discord, or emailing us at <a href="mailto:decache.finds@gmail.com">decache.finds@gmail.com</a>.</p>
         <div id="btnContainer" style="display: none;">
           <form>
               <input type="file" id="fileUpload" name="thaFile" hidden>
@@ -54,12 +54,13 @@
                   <span style="display: none;">Upload</span>
               </label>
           </form>
+          <a id="discordBtn" class="bigBtn squareBtn" href="https://discord.gg/6U8KwQEhyU"><img src="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/66e3d7f4ef6498ac018f2c55_Symbol.svg"/></a>
           <a id="emailBtn" class="bigBtn squareBtn" title="decache.finds@gmail.com" href="mailto:decache.finds@gmail.com"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Email_Silk.svg"/></a>
         </div>
         <p class="ie6warning"><b>Your browser is unable to upload files. Please try a newer browser.</b></p><br/>
         <h1>Can you help find a video?</h1>
         <hr/>
-        <p>You can suggest a video to be added to the <i>Decache</i> database using the form below. For more complicated queries, like a large quantity of lost videos or a Flash game, please try emailing us.</p>
+        <p>You can suggest one video at a time to be added to the <i>Decache</i> database using the form below. For more complicated queries, like a large quantity of lost videos or a Flash game, please try emailing us.</p><p>If you want us to help identify the ID of a video you remember, feel free to join our Discord server.</p>
         <form id="submission" style="display: none;">
           <label for="vid_title"><span style="color: red">*</span> Title:</label>
           <input name="title" class="short_field" id="vid_title" type="text" placeholder="(You can make this up, just be as accurate as possible)">
@@ -67,7 +68,7 @@
           <input name="id" class="short_field" id="vid_id" type="text" placeholder="e.g. dQw4w9WgXcQ, https://www.youtube.com/watch?v=jNQXAC9IVRw">
           <label for="vid_length">Duration:</label>
           <input name="length" class="short_field" id="vid_length" type="text" placeholder="(optional) e.g. 5:12">
-          <textarea name="context" id="vid_context" maxlength="1500" placeholder="Additional context (provide a brief description of the video's contents/importance, sources, links to thumbnails, etc.)"></textarea>
+          <textarea name="context" id="vid_context" maxlength="1500" placeholder="Additional context (provide a brief description of the video's contents, its importance to you or a community, sources, links to thumbnails, etc.)"></textarea>
           <button class="bigBtn" id="suggestBtn"><span>Suggest</span></button>
         </form>
         <p class="ie6warning"><b>Your browser is unable to suggest videos. Please try a newer browser.</b></p>
