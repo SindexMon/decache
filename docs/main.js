@@ -167,7 +167,7 @@ document.getElementById("submission").addEventListener("submit", async function(
   if (timeLeft > 0) {
     return;
   }
-  timeLeft = 30;
+  timeLeft = 15;
 
   const form = new FormData(this);
   const data = Object.fromEntries(form);
