@@ -223,7 +223,7 @@ document.getElementById("submission").addEventListener("submit", async function(
       clearInterval(cooldownTimer);
       document.getElementById("suggestBtn").children[0].innerHTML = "Suggest";
     } else {
-      document.getElementById("suggestBtn").children[0].innerHTML = timeLeft;
+      document.getElementById("suggestBtn").children[0].innerHTML = timeLeft - 1;
     }
     timeLeft -= 1;
   }, 1000);
