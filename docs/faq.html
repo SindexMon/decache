@@ -16,7 +16,15 @@
         <hr/>
         <p><b>Q: Is there any way to watch <i>every</i> video I have cached?</b></p>
         <p>Yes - but not with this program. This feature was heavily considered, but was ultimately scrapped due to several factors including: potential confusion about what videos are being sent off; minimizing how much strain would be put on a dying hard drive; and a lack of time to thoroughly research how websites handle video chunks.</p>
-        <p>I would recommend <a href="https://www.nirsoft.net/utils/video_cache_view.html">VideoCacheView</a> for the time being.</p>
+        <p>I would recommend <a href="https://www.nirsoft.net/utils/video_cache_view.html">VideoCacheView</a> for the time being. For unindexed videos in particular, which VideoCacheView does not support, you may run <span>start_decache.bat /keepall</span> from the command line.</p>
+        <hr/>
+        <p><b>Q: Can I run more than one computer at a time?</b></p>
+        <p>Not at a time, but in succession. You may supply a text file with a path to a computer on each line via the command line - e.g. <span>start_decache.bat computers.txt</span> - and the program will iterate through it.</p>
+        <p>To silence errors and move through a large number of computers without the need to pause, add the <span>/silence:x</span> command-line switch, with x being the mode:</p>
+        <ol>
+          <li>Ignore all errors; make no action.</li>
+          <li>Ignore all errors, but always make one attempt to claim ownership of a directory you've been denied access to.</li>
+        </ol>
         <hr/>
         <p><b>Q: Could the assets I'm asked to upload contain personal information?</b></p>
         <p>No. We are committed to eliminating any and all personally identifiable information that could be present in any assets you send to us. For maximum clarity, the main steps that we've taken to achieve this goal have been outlined here:</p>
