@@ -9,8 +9,11 @@ Alternatively, you may scan multiple computers by supplying a text file with a p
 `start_decache.bat computers.txt`
 
 There are also 2 command-line switches:
+
 `start_decache.bat /keepall`: save all unindexed videos to the "Unverified" folder.
+
 `start_decache.bat /silence:1`: ignore all errors; make no action.
+
 `start_decache.bat /silence:2`: ignore all errors, but always make one attempt to claim ownership of a directory you've been denied access to.
 
 All these can be used alongside one-another.
