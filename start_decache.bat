@@ -796,6 +796,14 @@ echo oops there's some parsing issue!!
   exit /b 0
 
 :scanDrive
+  if exist "bin\variables\lock.var" (
+    for /f %%e in ('cscript /nologo "bin\vbs\multitask.vbs"') do (
+      if "%%e" == "7" exit
+    )
+  ) else (
+    echo locked>"bin\variables\lock.var"
+  )
+
   del "!BASE!!LOCAL_HIST!" 2>nul
   del "!BASE!!GLOBAL_HIST!" 2>nul
 
@@ -949,6 +957,7 @@ echo oops there's some parsing issue!!
     )
   )
 
+  del "bin\variables\lock.var" >nul 2>nul
   cls
 
   :: Exclamation cleansing handled in VBS file
