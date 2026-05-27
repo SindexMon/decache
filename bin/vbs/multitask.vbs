@@ -1,0 +1,1 @@
+WScript.Echo MsgBox("It appears that another instance of Decache is either currently running or abruptly crashed. Running multiple instances of this program at the same time will break things very quickly." & vbNewLine & vbNewLine & "If you aren't already scanning a computer, press YES to continue.", 52, "Confirmation needed")

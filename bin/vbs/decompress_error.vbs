@@ -1,0 +1,1 @@
+WScript.Echo MsgBox("We were unable to decompress a lost asset. Try freeing up some space; this should require no more than 1 MB." & vbNewLine & vbNewLine & "Do you want to try again?", 20, "Unable to copy file")
