@@ -212,7 +212,9 @@ document.getElementById("submission").addEventListener("submit", async function(
     });
 
     const resp = await r.status;
-    if (resp !== 200) {
+    if (resp === 200) {
+      alert("Your suggestion was submitted successfully!");
+    } else {
       alert("Your suggestion was not received. Please try again!");
     }
   } catch(err) {
