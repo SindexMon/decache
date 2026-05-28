@@ -1,24 +1,24 @@
-numOfAssets = WScript.Arguments(0)
-numOfVideos = WScript.Arguments(1)
+numAssets = WScript.Arguments(0)
+numVideos = WScript.Arguments(1)
 
-If numOfAssets <> "0" Then
+If numAssets <> "0" Then
   Do
-    assetStatement = numOfAssets & " pieces"
+    assetStatement = numAssets & " pieces"
     fileStatement = "They"
     
-    If numOfAssets = "1" Then
-      assetStatement = numOfAssets & " piece"
+    If numAssets = "1" Then
+      assetStatement = numAssets & " piece"
       fileStatement = "It"
     End If
 
-    ans = InputBox("Decache has verified " & assetStatement & " of lost media on your computer! " & fileStatement & " can be reviewed in the ""Verified"" folder." & vbNewLine & vbNewLine & "To send these files over immediately, enter something we can contact you with (e.g. an email; Discord username; anonymous), and press OK."  & vbNewLine & vbNewLine & "If you want to share these someplace else, press cancel.", "Success", "")
+    ans = InputBox("Decache has verified " & assetStatement & " of lost media on your computer! " & fileStatement & " can be reviewed in the ""Verified"" folder." & vbNewLine & vbNewLine & "To claim your files as your own findings, enter something we can contact you with (e.g. an email; Discord username; anonymous), and press OK."  & vbNewLine & vbNewLine & "If you want to share these someplace else, press cancel.", "Success", "")
     ans = Replace(ans, "^", "^^")
     ans = Replace(ans, "!", "^!")
 
     If ans = "" Then
-      x = MsgBox("To be clear: by not providing an identifier, you are stating that your verified files WILL NOT be sent over, and you intend to share them independently." & vbNewLine & vbNewLine & "If you understand, press YES. If you want to go back, press NO.", 52, "Confirmation needed")
+      x = MsgBox("To be clear: by not providing an identifier, you are stating that your verified files WILL NOT be sent over, and you intend to share them on your own terms." & vbNewLine & vbNewLine & "If you understand, press YES. If you want to go back, press NO.", 52, "Confirmation needed")
     Else
-      x = MsgBox("To be clear: you are sending over your verified files with the following identifier (our only way to contact you):"  & vbNewLine & vbNewLine & ans & vbNewLine & vbNewLine & "If you understand, press YES. If you want to go back, press NO.", 52, "Confirmation needed")
+      x = MsgBox("To be clear: your verified files are marked with the following identifier (our only way to contact you):"  & vbNewLine & vbNewLine & ans & vbNewLine & vbNewLine & "If you understand, press YES. If you want to go back, press NO.", 52, "Confirmation needed")
     End If
   Loop Until x = 6
 
@@ -31,7 +31,7 @@ If numOfAssets <> "0" Then
       pub = "none provided"
     End If
 
-    If numOfVideos <> "0" Then
+    If numVideos <> "0" Then
       sendVideos = MsgBox("Do you want to encrypt and send the IDs of the videos in your cache? This will allow us to contact you if a video you have now is added to Decache in the future." & vbNewLine & vbNewLine & "We will NOT be able to see any videos you watched without knowing the exact ID.", 36, "Confirmation needed")
     End If
 
@@ -39,8 +39,8 @@ If numOfAssets <> "0" Then
     WScript.Echo pub
     WScript.Echo sendVideos
   End If
-ElseIf numOfVideos <> "0" Then
-  username = InputBox("Decache was not able to verify any lost media on your computer." & vbNewLine & vbNewLine & "If you want to send over the IDs of the " & numOfVideos & " unrelated videos in your cache (in case one is added to Decache later on), enter something we can contact you through (e.g. an email; Discord username), and press OK." & vbNewLine & vbNewLine & "These IDs will be encrypted, meaning we cannot read them, but can check if a specific ID is included." & vbNewLine & vbNewLine & "Otherwise, press cancel.", "Success")
+ElseIf numVideos <> "0" Then
+  username = InputBox("Decache was not able to verify any lost media on your computer." & vbNewLine & vbNewLine & "If you want to send over the IDs of the " & numVideos & " unrelated videos in your cache (in case one is added to Decache later on), enter something we can contact you through (e.g. an email; Discord username), and press OK." & vbNewLine & vbNewLine & "These IDs will be encrypted, meaning we cannot read them, but can check if a specific ID is included." & vbNewLine & vbNewLine & "Otherwise, press cancel.", "Success")
   username = Replace(username, "^", "^^")
   username = Replace(username, "!", "^!")
 
