@@ -972,7 +972,7 @@ echo oops there's some parsing issue!!
   set identifier=
   set publicCred=
   set sendVideos=
-  for /f "tokens=* delims=" %%z in ('cscript /nologo "bin\vbs\askserver.vbs" "!verifiedFiles!" "!numVideos!"') do (
+  for /f "tokens=* delims=" %%z in ('cscript /nologo "bin\vbs\askforname.vbs" "!verifiedFiles!" "!numVideos!"') do (
     if "!identifier!" == "" (
       set "identifier=%%z"
     ) else (
