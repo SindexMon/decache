@@ -169,7 +169,8 @@ form {
 iframe {
   text-align: center;
   width: 60%;
-  margin: 1.25rem 20% 0 20%;
+  aspect-ratio: calc(16 / 9);
+  margin: 0 20% 1.25rem 20%;
   aspect-ratio: calc(16 / 9);
 }
 

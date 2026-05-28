@@ -505,15 +505,15 @@ goto main
   exit /b 0
 
 :scanDir
-  cls
-  echo Scanning folder "!scanDir1!"
   set lastCacheScanner=%2
   set hasUnknown=0
   set currentFile=
   set /a filesChecked=0
   
   if exist "!scanDir1!" (
-    :: TODO - check for mimetypes; make sure the merged file is UNKNOWN! will be finnicky regardless though...
+    cls
+    echo Scanning folder "!scanDir1!"
+    
     pushd "nirsoft"
     set "BASE=..\.."
 
@@ -595,6 +595,7 @@ goto main
 :scanBrowsers
   if not exist "!scanBrowsers1!" exit /b 0
   
+  cls & echo Searching for cache under "!scanBrowsers1!" ...
   echo !scanBrowsers1!> "!BASE!\bin\variables\recursive.var"
 
   :: Chromium
@@ -644,6 +645,7 @@ goto main
     call :scanDir "opr+" "OperaCacheView"
   )
 
+  cls
   exit /b 0
 
 echo FUCK FUCK FUCKKKKKK FUCKKKKK 
@@ -652,6 +654,8 @@ echo FUCK FUCK FUCKKKKKK FUCKKKKK
   echo !scannedPC!\Local Settings\> "!BASE!\bin\variables\checkdir.var"
   echo !scannedPC!\> "!BASE!\bin\variables\brokendir.var"
   for /f %%e in ('call check_dir_exists.bat') do for /f %%t in ('call perm_error.bat !isAdmin! !SILENCE_ERRORS!') do (
+    cls & echo Searching for cache under "!scannedPC!\Application Data\" ...
+
     if exist "!scannedPC!\Application Data\" (
       set "massPermissionScan1=!scannedPC!\Application Data\"
       call :massPermissionScan
@@ -659,6 +663,8 @@ echo FUCK FUCK FUCKKKKKK FUCKKKKK
       set "scanBrowsers1=!scannedPC!\Application Data\"
       call :scanBrowsers
     )
+
+    cls & echo Searching for cache under "!scannedPC!\Local Settings\" ...
 
     set "massPermissionScan1=!scannedPC!\Local Settings\"
     call :massPermissionScan
@@ -694,6 +700,8 @@ echo oops there's some parsing issue!!!
   echo !scannedPC!\AppData\> "!BASE!\bin\variables\checkdir.var"
   echo !scannedPC!\> "!BASE!\bin\variables\brokendir.var"
   for /f %%e in ('call check_dir_exists.bat') do for /f %%t in ('call perm_error.bat !isAdmin! !SILENCE_ERRORS!') do (
+    cls & echo Searching for cache under "!scannedPC!\AppData\" ...
+
     :: Permission scans
     set "massPermissionScan1=!scannedPC!\AppData\"
     call :massPermissionScan
