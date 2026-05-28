@@ -231,7 +231,7 @@ goto main
     if "!value!" == "" (
       set "fileSize=0"
     ) else (
-      set "fileSize=!value:,=!"
+      for /f %%z in ('cscript /nologo "..\vbs\regex.vbs" "\D" "!value!" 2') do set "fileSize=%%z"
     )
   )
 
