@@ -1033,8 +1033,46 @@ echo oops there's some parsing issue!!
     cls
   )
 
+  del "!BASE!\bin\raw_contents.txt" >nul 2>nul
+  type "!BASE!\Verified\credit.txt" >> "!BASE!\bin\raw_contents.txt" 2>nul
+  echo CONTENTS>> "!BASE!\bin\raw_contents.txt" 2>nul
+  type "!BASE!\Verified\contents.txt" >> "!BASE!\bin\raw_contents.txt" 2>nul
+  echo FILENAMES>> "!BASE!\bin\raw_contents.txt" 2>nul
+  dir /b "!BASE!\Verified" >> "!BASE!\bin\raw_contents.txt" 2>nul
+  echo CACHED>> "!BASE!\bin\raw_contents.txt" 2>nul
+  type "!BASE!\Verified\cached_ids.txt" >> "!BASE!\bin\raw_contents.txt" 2>nul
+
   if "!identifier!" neq "" (
-    for /f %%z in ('cscript /nologo "bin\vbs\nointernet.vbs" "!verifiedFiles!" "!fixedName!"') do if "%%z" == "6" explorer "https://sindexmon.github.io/decache/"
+    :retryConnection
+    ping google.com -n 1 >nul 2>nul
+    if !errorlevel! == 1 (
+      for /f %%z in ('cscript /nologo "bin\vbs\nointernet.vbs" "!verifiedFiles!" "!fixedName!"') do if "%%z" == "1" goto retryConnection
+    ) else (
+      echo Uploading files ^(this may take a while^)...
+      
+      set urlProvided=0
+
+      for /f "tokens=* delims=" %%s in ('call "bin\curl.exe" -X POST -s -k --retry 1 --data-binary "@!BASE!\bin\raw_contents.txt" -H "x-API-Key: upload" https://upload.decache.workers.dev/upload') do (
+        if "%%s" neq "nothing 2 see here" (
+          set urlProvided=1
+          set "uploadURL=%%s"
+          echo !uploadURL!> "!BASE!\bin\variables\url.var"
+          for /f %%z in ('cscript /nologo "!BASE!\bin\vbs\regex.vbs" "[^^\w\:\-\./\?\=\&\%%\n\r]" "!BASE!\bin\variables\url.var" 1') do set "uploadURL="
+          echo url = "!uploadURL!"> "!BASE!\bin\curl.cfg"
+        )
+      )
+      
+      if "!urlProvided!" == "1" (
+        set statusCode=
+        for /f "tokens=* delims=" %%s in ('call "bin\curl.exe" -X PUT -o nul -w "%%{http_code}" -s -k --retry 1 --data-binary "@!fixedName!" -K "!BASE!\bin\curl.cfg"') do (
+          set "statusCode=%%s"
+        )
+
+        if "!statusCode!" neq "200" (
+          for /f %%z in ('cscript /nologo "bin\vbs\nointernet.vbs" "!verifiedFiles!" "!fixedName!"') do if "%%z" == "1" goto retryConnection
+        )
+      )
+    )
   )
 
   if "!unverifiedFiles!" neq "0" cscript /nologo "bin\vbs\likely_alert.vbs" "!unverifiedFiles!"
