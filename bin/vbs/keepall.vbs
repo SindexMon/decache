@@ -1,0 +1,1 @@
+WScript.Echo MsgBox("Do you want to save every video in your cache, regardless of whether it's lost or not, to a new ""Dump"" folder?" & vbNewLine & vbNewLine & "It might take up quite a bit of space, but it's neat!", 36, "Notice")
