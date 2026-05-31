@@ -185,6 +185,7 @@ goto main
     set "getFreeName1=%%~nf!ext!"
     call :getFreeName "!BASE!\Unverified\"
     echo F|xcopy "!checkFile1!" "!BASE!\Unverified\!fixedName!" > nul
+    echo !checkFile1!> "!BASE!\bin\private_locations.txt"
 
     set "lastSaved=!BASE!\Unverified\!fixedName!"
     echo Batch refuses to detect a label if I don't add this >nul
@@ -232,6 +233,8 @@ goto main
     ren "!lastSaved!" "!fixedName!"
     set "lastSaved=!BASE!\Unverified\!fixedName!"
   )
+
+  echo !lastSaved!> "!BASE!\bin\private_locations.txt"
 
   set "fileName=!fileName:(={!"
   set "fileName=!fileName:)=}!"
