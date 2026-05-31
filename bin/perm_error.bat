@@ -79,6 +79,7 @@ if exist "!filteredPath!" (
     exit /b 0
 
     :midCheck
+    del "variables\lock.var" >nul 2>nul
     for /f %%e in ('cscript /nologo "vbs\perm_error.vbs" "!VAR_PATH!brokendir.var" !IS_ADMIN! !WILL_SUCCEED_ON_ADMIN! !SILENCE_ERRORS! !fallbackCount!') do (
       rem This will try and take ownership of the failing directory IF THE USER AGREES TO.
       rem The user will have to agree to TWO clear yes/no warning prompts.
@@ -99,5 +100,6 @@ if exist "!filteredPath!" (
         goto startCheck
       )
     )
+    echo locked> "variables\lock.var"
   )
 )

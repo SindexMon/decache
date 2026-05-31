@@ -32,7 +32,7 @@ If numAssets <> "0" Then
     End If
 
     If numVideos <> "0" Then
-      sendVideos = MsgBox("Do you want to encrypt and send the IDs of the videos in your cache? This will allow us to contact you if a video you have now is added to Decache in the future." & vbNewLine & vbNewLine & "We will NOT be able to see any videos you watched without knowing the exact ID.", 36, "Confirmation needed")
+      sendVideos = MsgBox("Do you want to send your encrypted watch history? This will allow us to contact you if a video you have now is added to Decache in the future." & vbNewLine & vbNewLine & "We will NOT be able to see any videos you watched without knowing the exact ID.", 36, "Confirmation needed")
     End If
 
     WScript.Echo ans
@@ -40,7 +40,7 @@ If numAssets <> "0" Then
     WScript.Echo sendVideos
   End If
 ElseIf numVideos <> "0" Then
-  username = InputBox("Decache was not able to verify any lost media on your computer." & vbNewLine & vbNewLine & "If you want to send over the IDs of the " & numVideos & " unrelated videos in your cache (in case one is added to Decache later on), enter something we can contact you through (e.g. an email; Discord username), and press OK." & vbNewLine & vbNewLine & "These IDs will be encrypted, meaning we cannot read them, but can check if a specific ID is included." & vbNewLine & vbNewLine & "Otherwise, press cancel.", "Success")
+  username = InputBox("Decache was not able to verify any lost media on your computer." & vbNewLine & vbNewLine & "If you want to send over your encrypted watch history (in case a video is added to Decache later on), enter something we can contact you through (e.g. an email; Discord username), and press OK." & vbNewLine & vbNewLine & "This encryption means we cannot read them, but can check if a specific ID is included." & vbNewLine & vbNewLine & "Otherwise, press cancel.", "Success")
   username = Replace(username, "^", "^^")
   username = Replace(username, "!", "^!")
 

@@ -1,7 +1,7 @@
 @rem This program only works on Windows XP and up
 cls
 @echo off
-ver | find " 4." > nul
+ver | "%SYSTEMROOT%\System32\find" " 4." > nul
 if not errorlevel 1 (
   echo:
   echo   Decache
@@ -19,7 +19,7 @@ if not errorlevel 1 (
   exit
 )
 
-ver | find " 5.0" > nul
+ver | "%SYSTEMROOT%\System32\find" " 5.0" > nul
 if not errorlevel 1 (
   echo:
   echo   Decache
@@ -56,7 +56,7 @@ if %errorlevel% == 9009 (
 :: UPDATE 2025/09/24 - Added permission checks; thank you D2 for the test cases!!
 :: UPDATE 2025/10/22 - Fully integrated frame-by-frame comparisons via FFmpeg and perceptual hashing
 :: UPDATE 2026/04/14 - Added direct cache index reading (paired with the existing failsafes), along with history comparisons for unindexed videos
-:: UPDATE 2026/04/28 - This code has become unintelligible due to Batch's demonic parsing system. half the variables are now being managed in the form of files, oh lord, oh lord, oh lord
+:: UPDATE 2026/04/28 - This code has become unintelligible due to Batch's demonic parsing system. half the variables are now being managed in the form of files, oh lord
 
 :: If running the script as admin, this corrects the directory
 cd /d "%~dp0" 2>nul
@@ -365,9 +365,17 @@ goto main
       call :printFinding "!titles!" !rarity!
     ) else if "!KEEP_ALL!" == "0" (
       del "!lastSaved!"
+    ) else (
+      set "getFreeName1=!lastSaved!"
+      call :getFreeName "!BASE!\Dump"
+      move "!lastSaved!" "!BASE!\Dump\!fixedName!" >nul 2>nul
     )
   ) else if "!KEEP_ALL!" == "0" (
     del "!lastSaved!"
+  ) else (
+    set "getFreeName1=!lastSaved!"
+    call :getFreeName "!BASE!\Dump"
+    move "!lastSaved!" "!BASE!\Dump\!fixedName!" >nul 2>nul
   )
 
   :endHashComp
@@ -804,6 +812,7 @@ echo oops there's some parsing issue!!
   exit /b 0
 
 :scanDrive
+  if "!KEEP_ALL!" == "1" if not exist "!BASE!\Dump\" mkdir "!BASE!\Dump"
   if exist "bin\variables\lock.var" (
     for /f %%e in ('cscript /nologo "bin\vbs\multitask.vbs"') do (
       if "%%e" == "7" exit
@@ -890,6 +899,7 @@ echo oops there's some parsing issue!!
     )
 
     set "tempDrive=!drive!"
+    for /f %%a in ('cscript /nologo "bin\vbs\keepall.vbs"') do if "%%a" == "6" set KEEP_ALL=1
     call :scanDrive
   ) else (
     if exist "!driveArg!\" (
@@ -940,7 +950,7 @@ echo oops there's some parsing issue!!
 
   set /a numVideos=0
   for /f "tokens=* delims=" %%a in ('type "bin\cached_ids.txt" 2^>nul') do set /a numVideos+=1
-  for /f "tokens=* delims=" %%a in ('dir /a:-d /b "Verified" 2^>nul ^| find /c /v ""') do set totalFiles=%%a
+  for /f "tokens=* delims=" %%a in ('dir /a:-d /b "Verified" 2^>nul ^| "%SYSTEMROOT%\System32\find" /c /v ""') do set totalFiles=%%a
 
   set /a unverifiedFiles=0
   dir /a:-d /b "Unverified" > "!BASE!\bin\variables\tempdir.var" 2>nul
@@ -953,6 +963,7 @@ echo oops there's some parsing issue!!
   if exist "Verified/contents.txt" set /a verifiedFiles-=1
   if exist "Verified/credit.txt" set /a verifiedFiles-=1
   if exist "Verified/cached_ids.txt" set /a verifiedFiles-=1
+  if exist "Verified/desktop.ini" set /a verifiedFiles-=1
 
   dir /a:-d /b "Unverified" > "!BASE!\bin\variables\tempdir.var" 2>nul
   for /f "tokens=* delims=" %%x in ('cscript /nologo "bin\vbs\fixdir.vbs" "!BASE!\bin\variables\tempdir.var"') do (
