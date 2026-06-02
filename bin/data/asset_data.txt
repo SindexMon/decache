@@ -79,9 +79,7 @@ server1.nhinteractive.com/penguin-300/
 server1.nhinteractive.com:80/penguin-300/
 cache.lego.com/flash/starwars/transmissions/transmission
 cache.lego.com:80/flash/starwars/transmissions/transmission
-cdn.pokemon-gl.com
-cdn2.pokemon-gl.com
-en-ds.pokemon-gl.com
+pokemon-gl.com
 &docid=-8128339497863628282
 &id=-8128339497863628282
 &contentid=-8128339497863628282
