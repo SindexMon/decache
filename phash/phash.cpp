@@ -13,24 +13,28 @@
 const int WIDTH = 32;
 const int HEIGHT = 32;
 const int FRAME_SIZE = WIDTH * HEIGHT;
+const int UCOUNT = 8;
+const int VCOUNT = 8;
+const int UVSIZE = UCOUNT * VCOUNT;
 
 const float PI = 3.14159265358979323846f;
-float cos_table_x[32][8];
-float cos_table_y[32][8];
+const float ISQRT_2 = 0.70710678118654752440f;
+float cos_table_x[WIDTH][UCOUNT];
+float cos_table_y[HEIGHT][VCOUNT];
 
 // Compute 2D DCT on 32x32 input and return top-left 8x8 coefficients
-void dct8x8(const uint8_t* input, float out[8][8]) {
-    for (int u = 0; u < 8; ++u) {
-        for (int v = 0; v < 8; ++v) {
+void dct8x8(const uint8_t* input, float out[UCOUNT][VCOUNT]) {
+    for (int u = 0; u < UCOUNT; ++u) {
+        for (int v = 0; v < VCOUNT; ++v) {
             float sum = 0.0f;
-            for (int x = 0; x < WIDTH; ++x) {
-                for (int y = 0; y < HEIGHT; ++y) {
+            for (int y = 0; y < HEIGHT; ++y) {
+                for (int x = 0; x < WIDTH; ++x) {
                     float pixel = static_cast<float>(input[y * WIDTH + x]);
                     sum += pixel * cos_table_x[x][u] * cos_table_y[y][v];
                 }
             }
-            float cu = (u == 0) ? (1.0f / std::sqrt(2.0f)) : 1.0f;
-            float cv = (v == 0) ? (1.0f / std::sqrt(2.0f)) : 1.0f;
+            float cu = (u == 0) ? ISQRT_2 : 1.0f;
+            float cv = (v == 0) ? ISQRT_2 : 1.0f;
             out[u][v] = 0.25f * cu * cv * sum;
         }
     }
@@ -43,17 +47,19 @@ uint64_t compute_phash(const uint8_t* frame) {
 
     // Compute average of top-left 8x8 coefficients
     float total = 0.0f;
-    for (int u = 0; u < 8; ++u)
-        for (int v = 0; v < 8; ++v)
+    for (int u = 0; u < UCOUNT; ++u) {
+        for (int v = 0; v < VCOUNT; ++v) {
             total += dct[u][v];
-    float avg = total / 64.0f;
+        }
+    }
+    float avg = total / UVSIZE;
 
     // Build 64-bit hash
     uint64_t hash = 0;
-    for (int u = 0; u < 8; ++u) {
-        for (int v = 0; v < 8; ++v) {
+    for (int u = 0; u < UCOUNT; ++u) {
+        for (int v = 0; v < VCOUNT; ++v) {
             hash <<= 1;
-            if (dct[u][v] > avg) hash |= 1;
+            hash |= dct[u][v] > avg;
         }
     }
     return hash;
@@ -90,8 +96,9 @@ int main(int argc, char* argv[]) {
 
     // Load all hashes
     std::vector<uint64_t> target_hashes;
-    for (int i = 2; i < argc; ++i)
+    for (int i = 2; i < argc; ++i) {
         target_hashes.push_back(parse_hex64(argv[i]));
+    }
 
     FILE* f = fopen(input_file, "rb");
     if (!f) {
@@ -100,13 +107,17 @@ int main(int argc, char* argv[]) {
     }
 
     // Precompute cosine tables
-    for (int x = 0; x < WIDTH; ++x)
-        for (int u = 0; u < 8; ++u)
+    for (int x = 0; x < WIDTH; ++x) {
+        for (int u = 0; u < UCOUNT; ++u) {
             cos_table_x[x][u] = std::cos((2*x + 1) * u * PI / 64.0f);
+        }
+    }
 
-    for (int y = 0; y < HEIGHT; ++y)
-        for (int v = 0; v < 8; ++v)
+    for (int y = 0; y < HEIGHT; ++y) {
+        for (int v = 0; v < VCOUNT; ++v) {
             cos_table_y[y][v] = std::cos((2*y + 1) * v * PI / 64.0f);
+        }
+    }
 
     uint8_t frame[FRAME_SIZE];
     int frame_num = 0;
@@ -116,9 +127,10 @@ int main(int argc, char* argv[]) {
 
         for (size_t i = 0; i < target_hashes.size(); ++i) {
             int dist = hamming(hash, target_hashes[i]);
-            if (dist <= 3 && target_hashes[i] != 0)
+            if (dist <= 3 && target_hashes[i] != 0) {
                 std::cout << std::hex << std::setw(16) << std::setfill('0') << target_hashes[i] << " "
                           << std::hex << hash << " " << std::dec << dist << "\n";
+            }
         }
 
         frame_num++;
